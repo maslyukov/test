@@ -1,6 +1,7 @@
 ifndef TARGER
 	TARGET := client
 endif
+
 LIBS		:=
 			
 OPTIMIZATION	:= -O0
