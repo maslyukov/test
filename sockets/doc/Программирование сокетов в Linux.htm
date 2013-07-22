@@ -1,0 +1,895 @@
+
+<!-- saved from url=(0043)http://www.rsdn.ru/article/unix/sockets.xml -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Программирование сокетов в Linux</title><meta name="robots" content="index,follow"><link rel="stylesheet" href="./Программирование сокетов в Linux_files/article.css" type="text/css"><script type="text/javascript" async="" src="./Программирование сокетов в Linux_files/watch.js"></script><script type="text/javascript" src="./Программирование сокетов в Linux_files/jquery.min.js"></script><script type="text/javascript" src="./Программирование сокетов в Linux_files/rsdn.v1.js"></script><script type="text/javascript" src="./Программирование сокетов в Linux_files/Forum.v3.js" charset="utf-8"></script></head><body marginwidth="20" marginheight="20"><table width="100%" border="0" cellspacing="0" celpadding="2" style="font-family:verdana;font-weight:bold;padding: 0px 5px; BORDER: #9daabd 1px 	solid; 	COLOR: #646464; BACKGROUND-COLOR: #e6e6e6;"><tbody><tr><td nowrap="nowrap"><font size="1" style="font-weight:normal"><script src="./Программирование сокетов в Linux_files/shMenu.v1.js" type="text/javascript" charset="utf-8"></script>&lt;&lt;<a href="http://www.rsdn.ru/?article/unix/sockets.xml" target="_top">Показать&nbsp;меню</a>&nbsp;</font></td><td nowrap="nowrap" align="right" width="100%"><font size="2">&nbsp;<a href="http://www.rsdn.ru/article/unix/sockets.xml?print" target="_blank" title="Версия для печати"><img align="absmiddle" width="16" height="14" src="./Программирование сокетов в Linux_files/printer2.gif" border="0"></a>&nbsp;&nbsp;<a href="http://www.rsdn.ru/forum/network/678813" target="_self" title="Перейти к обсуждению статьи"><font size="1" color="#646464"> Сообщений </font><font color="black">20</font></a>&nbsp;&nbsp;<a href="http://www.rsdn.ru/forum/network/678813" target="_self" title="Перейти к обсуждению статьи"><img src="./Программирование сокетов в Linux_files/showfr.gif" align="absmiddle" border="0" width="18px" height="14px"></a>&nbsp;<a href="http://www.rsdn.ru/Forum/RateList.aspx?mid=678813"><font color="#646464"><font size="1"> Оценка </font><font color="black">946</font>
+									[<font style="font-weight: normal;"><span style="color:green;">+4</span>/<span style="color:blue;">-3</span></font>]
+								</font></a>&nbsp;&nbsp; <a target="_blank" rel="nofollow" href="http://www.rsdn.ru/Users/Private/AddFav.aspx?mid=678813" onclick="return AddFav(this.href);" title="Добавить в избранное"><img align="absmiddle" src="./Программирование сокетов в Linux_files/fav.gif" border="0" height="14px"></a>&nbsp;&nbsp;<a href="http://www.rsdn.ru/Forum/Private/Subscr.aspx?tid=678813" onclick="return SubMsg(this.href)" title="Подписка на сообщения" rel="nofollow"><img class="i" align="absmiddle" src="./Программирование сокетов в Linux_files/sub.gif" border="0" width="18px" height="14px"></a>&nbsp;&nbsp;&nbsp;<font size="1">Оценить </font><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=-3" onclick="return RateMsg(this.href);" title="+1"><img align="absmiddle" src="./Программирование сокетов в Linux_files/n11.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=1" onclick="return RateMsg(this.href);" title="Интересно"><img align="absmiddle" src="./Программирование сокетов в Linux_files/n1.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=2" onclick="return RateMsg(this.href);" title="Спасибо"><img align="absmiddle" src="./Программирование сокетов в Linux_files/n2.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=3" onclick="return RateMsg(this.href);" title="Супер"><img align="absmiddle" src="./Программирование сокетов в Linux_files/n3.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=-1" onclick="return RateMsg(this.href);" title="Удалить оценку"><img align="absmiddle" src="./Программирование сокетов в Linux_files/nx.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=-4" onclick="return RateMsg(this.href);" title="Согласен"><img align="absmiddle" src="./Программирование сокетов в Linux_files/np.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=0" onclick="return RateMsg(this.href);" title="Не согласен"><img align="absmiddle" src="./Программирование сокетов в Linux_files/nm.gif" border="0" width="18px" eight="14px"></a>&nbsp;
+					</font></td></tr></tbody></table><script type="text/javascript" src="./Программирование сокетов в Linux_files/orphus.js"></script><a href="http://orphus.ru/" id="orphus" title="Система Orphus"><img alt="Система Orphus" src="./Программирование сокетов в Linux_files/orphus.gif" border="0" width="100" height="25"></a><h1>Программирование сокетов в Linux</h1><h5><span class="title">Автор: </span><span class="value">Александр Шаргин</span></h5><h6><span class="title">Опубликовано: </span><span class="value">16.05.2001</span><br><span class="title">Исправлено: </span><span class="value">04.02.2006</span><br><span class="title">Версия текста: </span><span class="value">1.1</span></h6><script language="javascript">
+			function ToggleCode(id)
+			{
+				el=document.getElementById(id);
+				img=document.getElementById("img"+id);
+				if(el.style.display=="none")
+				{
+					img.src="/images/ls2.gif";
+					el.style.display="";
+				}
+				else
+				{
+					img.src="/images/ls1.gif";
+					el.style.display="none";
+				}
+				return false;
+			}
+		</script><h2>Введение<a name="EM"></a></h2>
+
+
+<p>Socket API был впервые реализован в операционной системе Berkley UNIX. Сейчас этот программный интерфейс доступен практически в любой модификации Unix, в том числе в Linux. Хотя все реализации чем-то отличаются друг от друга, основной набор функций в них совпадает. Изначально сокеты использовались в программах на C/C++, но в настоящее время средства для работы с ними предоставляют многие языки (Perl, Java и др.).</p>
+
+<p>Сокеты предоставляют весьма мощный и гибкий механизм межпроцессного взаимодействия (IPC). Они могут использоваться для организации взаимодействия программ на одном компьютере, по локальной сети или через Internet, что позволяет вам создавать распределённые приложения различной сложности. Кроме того, с их помощью можно организовать взаимодействие с программами, работающими под управлением других операционных систем. Например, под Windows существует интерфейс Window Sockets, спроектированный на основе socket API. Ниже мы увидим, насколько легко можно адаптировать существующую Unix-программу для работы под Windows.</p>
+
+<p>Сокеты поддерживают многие стандартные сетевые протоколы (конкретный их список зависит от реализации) и предоставляют унифицированный интерфейс для работы с ними. Наиболее часто сокеты используются для работы в IP-сетях. В этом случае их можно использовать для взаимодействия приложений не только по специально разработанным, но и по стандартным протоколам - HTTP, FTP, Telnet и т. д. Например, вы можете написать собственный Web-броузер или Web-сервер, способный обслуживать одновременно множество клиентов.</p>
+
+<p>Как видим, сокеты - весьма мощное и удобное средство для сетевого программирования. В этой статье я покажу, как ими пользоваться. Начав с понятия сокета и самых основных функций для работы с ним, мы постепенно перейдём к обсуждению более сложных тем. В частности, мы рассмотрим использование низкоуровневых сокетов, различные способы организации параллельного обслуживания клиентов, использование стандартных протоколов Internet и взаимодействие с программами, работающими под управлением операционной системы Microsoft Windows.</p>
+
+<table class="note" width="98%"><tbody><tr><td><strong>ПРИМЕЧАНИЕ</strong><br>Большая часть материала, изложенного в статье, применимо ко всему семейству ОС Unix. Тем не менее, все приводимые далее факты и демонстрационные программы проверялись только под Linux, поэтому название этой ОС и вынесено в заголовок статьи.</td></tr></tbody></table>
+<h2>Основы socket API<a name="E2"></a></h2>
+
+
+<h3>Понятие сокета<a name="E6"></a></h3>
+
+
+<p><i>Сокет</i> (socket) - это конечная точка сетевых коммуникаций. Он является чем-то вроде "портала", через которое можно отправлять байты во внешний мир. Приложение просто пишет данные в сокет; их дальнейшая буферизация, отправка и транспортировка осуществляется используемым стеком протоколов и сетевой аппаратурой. Чтение данных из сокета происходит аналогичным образом.</p>
+
+<p>В программе сокет идентифицируется <i>дескриптором</i> - это просто переменная типа <b>int</b>. Программа получает дескриптор от операционной системы при создании сокета, а затем передаёт его сервисам socket API для указания сокета, над которым необходимо выполнить то или иное действие.</p>
+
+
+<h3>Атрибуты сокета<a name="EPB"></a></h3>
+
+
+<p>С каждым сокет связываются три атрибута: <i>домен</i>, <i>тип</i> и <i>протокол</i>. Эти атрибуты задаются при создании сокета и остаются неизменными на протяжении всего времени его существования. Для создания сокета используется функция <b>socket</b>, имеющая следующий прототип.</p>
+
+<div id="E5B"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+
+<span class="KEYWORD">int</span> socket(<span class="KEYWORD">int</span> domain, <span class="KEYWORD">int</span> type, <span class="KEYWORD">int</span> protocol);</pre></td></tr></tbody></table></div>
+
+<p>Домен определяет пространство адресов, в котором располагается сокет, и множество протоколов, которые используются для передачи данных. Чаще других используются домены Unix и Internet, задаваемые константами <b>AF_UNIX</b> и <b>AF_INET</b> соответственно (префикс AF означает "address family" - "семейство адресов"). При задании <b>AF_UNIX</b> для передачи данных используется файловая система ввода/вывода Unix. В этом случае сокеты используются для межпроцессного взаимодействия на одном компьютере и не годятся для работы по сети. Константа <b>AF_INET</b> соответствует Internet-домену. Сокеты, размещённые в этом домене, могут использоваться для работы в любой IP-сети. Существуют и другие домены (<b>AF_IPX</b> для  протоколов Novell, <b>AF_INET6</b> для новой модификации протокола IP - IPv6 и т. д.), но в этой статье мы не будем их рассматривать.</p>
+
+<p>Тип сокета определяет способ передачи данных по сети. Чаще других применяются:</p>
+
+<ul style="LIST-STYLE:square">
+<li><b>SOCK_STREAM</b>. Передача потока данных с предварительной установкой соединения. Обеспечивается надёжный канал передачи данных, при котором фрагменты отправленного блока не теряются, не переупорядочиваются и не дублируются. Поскольку этот тип сокетов является самым распространённым, до конца раздела мы будем говорить только о нём. Остальным типам будут посвящены отдельные разделы.</li>
+<li><b>SOCK_DGRAM</b>. Передача данных в виде отдельных сообщений (датаграмм). Предварительная установка соединения не требуется. Обмен данными происходит быстрее, но является ненадёжным: сообщения могут теряться в пути, дублироваться и переупорядочиваться. Допускается передача сообщения нескольким получателям (multicasting) и широковещательная передача (broadcasting).</li>
+<li><b>SOCK_RAW</b>. Этот тип присваивается низкоуровневым (т. н. "сырым") сокетам. Их отличие от обычных сокетов состоит в том, что с их помощью программа может взять на себя формирование некоторых заголовков, добавляемых к сообщению.</li>
+</ul>
+
+<p>Обратите внимание, что не все домены допускают задание произвольного типа сокета. Например, совместно с доменом Unix используется только тип <b>SOCK_STREAM</b>. С другой стороны, для Internet-домена можно задавать любой из перечисленных типов. В этом случае для реализации <b>SOCK_STREAM</b> используется протокол TCP, для реализации <b>SOCK_DGRAM</b> - протокол UDP, а тип <b>SOCK_RAW</b> используется для низкоуровневой работы с протоколами IP, ICMP и т. д.</p>
+
+<p>Наконец, последний атрибут определяет протокол, используемый для передачи данных. Как мы только что видели, часто протокол однозначно определяется по домену и типу сокета. В этом случае в качестве третьего параметра функции <b>socket</b> можно передать 0, что соответствует протоколу по умолчанию. Тем не менее, иногда (например, при работе с низкоуровневыми сокетами) требуется задать протокол явно. Числовые идентификаторы протоколов зависят от выбранного домена; их можно найти в документации.</p>
+
+
+<h3>Адреса<a name="E5D"></a></h3>
+
+
+<p>Прежде чем передавать данные через сокет, его необходимо связать с адресом в выбранном домене (эту процедуру называют именованием сокета). Иногда связывание осуществляется неявно (внутри функций <b>connect</b> и <b>accept</b>), но выполнять его необходимо во всех случаях. Вид адреса зависит от выбранного вами домена. В Unix-домене это текстовая строка - имя файла, через который происходит обмен данными. В Internet-домене адрес задаётся комбинацией IP-адреса и 16-битного номера порта. IP-адрес определяет хост в сети, а порт - конкретный сокет на этом хосте. Протоколы TCP и UDP используют различные пространства портов.</p>
+
+<p>Для явного связывания сокета с некоторым адресом используется функция <b>bind</b>. Её прототип имеет вид:</p>
+
+<div id="EOE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+
+<span class="KEYWORD">int</span> bind(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">struct</span> sockaddr *addr, <span class="KEYWORD">int</span> addrlen);
+</pre></td></tr></tbody></table></div>
+
+<p>В качестве первого параметра передаётся дескриптор сокета, который мы хотим привязать к заданному адресу. Второй параметр, <b>addr</b>, содержит указатель на структуру с адресом, а третий - длину этой структуры. Посмотрим, что она собой представляет.</p>
+
+<div id="ECF"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">struct</span> sockaddr {
+    <span class="KEYWORD">unsigned</span> <span class="KEYWORD">short</span>    sa_family;    <span class="COMMENT">// Семейство адресов, AF_xxx</span>
+    <span class="KEYWORD">char</span>              sa_data[<span class="NUMBER">14</span>];  <span class="COMMENT">// 14 байтов для хранения адреса</span>
+};
+</pre></td></tr></tbody></table></div>
+
+<p>Поле <b>sa_family</b> содержит идентификатор домена, тот же, что и первый параметр функции <b>socket</b>. В зависимости от значения этого поля по-разному интерпретируется содержимое массива <b>sa_data</b>. Разумеется, работать с этим массивом напрямую не очень удобно, поэтому вы можете использовать вместо <b>sockaddr</b> одну из альтернативных структур вида <b>sockaddr_XX</b> (XX - суффикс, обозначающий домен: "un" - Unix, "in" - Internet и т. д.). При передаче в функцию <b>bind</b> указатель на эту структуру приводится к указателю на <b>sockaddr</b>. Рассмотрим для примера структуру <b>sockaddr_in</b>.</p>
+
+<div id="EGG"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">struct</span> sockaddr_in {
+    <span class="KEYWORD">short</span> <span class="KEYWORD">int</span>          sin_family;  <span class="COMMENT">// Семейство адресов</span>
+    <span class="KEYWORD">unsigned</span> <span class="KEYWORD">short</span> <span class="KEYWORD">int</span> sin_port;    <span class="COMMENT">// Номер порта</span>
+    <span class="KEYWORD">struct</span> in_addr     sin_addr;    <span class="COMMENT">// IP-адрес</span>
+    <span class="KEYWORD">unsigned</span> <span class="KEYWORD">char</span>      sin_zero[<span class="NUMBER">8</span>]; <span class="COMMENT">// "Дополнение" до размера структуры sockaddr</span>
+};
+</pre></td></tr></tbody></table></div>
+
+<p>Здесь поле <b>sin_family</b> соответствует полю <b>sa_family</b> в <b>sockaddr</b>, в <b>sin_port</b> записывается номер порта, а в <b>sin_addr</b> - IP-адрес хоста. Поле <b>sin_addr</b> само является структурой, которая имеет вид:</p>
+
+<div id="EUH"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">struct</span> in_addr {
+    <span class="KEYWORD">unsigned</span> <span class="KEYWORD">long</span> s_addr;
+};
+</pre></td></tr></tbody></table></div>
+
+<p>Зачем понадобилось заключать всего одно поле в структуру? Дело в том, что раньше <b>in_addr</b> представляла собой объединение (union), содержащее гораздо большее число полей. Сейчас, когда в ней осталось всего одно поле, она продолжает использоваться для обратной совместимости.</p>
+
+<p>И ещё одно важное замечание. Существует два порядка хранения байтов в слове и двойном слове. Один из них называется <i>порядком хоста</i> (host byte order), другой - <i>сетевым порядком</i> (network byte order) хранения байтов. При указании IP-адреса и номера порта необходимо преобразовать число из порядка хоста в сетевой. Для этого используются функции <b>htons</b> (Host TO Network Short) и <b>htonl</b> (Host TO Network Long). Обратное преобразование выполняют функции <b>ntohs</b> и <b>ntohl</b>.</p>
+
+<table class="note" width="98%"><tbody><tr><td><strong>ПРИМЕЧАНИЕ</strong><br>На некоторых машинах (к PC это не относится) порядок хоста и сетевой порядок хранения байтов совпадают. Тем не менее, функции преобразования лучше применять и там, поскольку это улучшит переносимость программы. Это никак не скажется на производительности, так как препроцессор сам уберёт все "лишние" вызовы этих функций, оставив их только там, где преобразование действительно необходимо.</td></tr></tbody></table>
+
+
+<h3>Установка соединения (сервер)<a name="EVAAC"></a></h3>
+
+
+<p>Установка соединения на стороне сервера состоит из четырёх этапов, ни один из которых не может быть опущен. Сначала сокет создаётся и привязывается к локальному адресу. Если компьютер имеет несколько сетевых интерфейсов с различными IP-адресами, вы можете принимать соединения только с одного из них, передав его адрес функции <b>bind</b>. Если же вы готовы соединяться с клиентами через любой интерфейс, задайте в качестве адреса константу <b>INADDR_ANY</b>. Что касается номера порта, вы можете задать конкретный номер или 0 (в этом случае система сама выберет произвольный неиспользуемый в данный момент номер порта).</p>
+
+<p>На следующем шаге создаётся очередь запросов на соединение. При этом сокет переводится в режим ожидания запросов со стороны клиентов. Всё это выполняет функция <b>listen</b>.</p>
+
+<div id="EFBAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">int</span> listen(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">int</span> backlog);
+</pre></td></tr></tbody></table></div>
+
+<p>Первый параметр - дескриптор сокета, а второй задаёт размер очереди запросов. Каждый раз, когда очередной клиент пытается соединиться с сервером, его запрос ставится в очередь, так как сервер может быть занят обработкой других запросов. Если очередь заполнена, все последующие запросы будут игнорироваться. Когда сервер готов обслужить очередной запрос, он использует функцию <b>accept</b>.</p>
+
+<div id="ETBAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+
+<span class="KEYWORD">int</span> accept(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">void</span> *addr, <span class="KEYWORD">int</span> *addrlen);
+</pre></td></tr></tbody></table></div>
+
+<p>Функция <b>accept</b> создаёт для общения с клиентом <i>новый</i> сокет и возвращает его дескриптор. Параметр <b>sockfd</b> задаёт слушающий сокет. После вызова он остаётся в слушающем состоянии и может принимать другие соединения. В структуру, на которую ссылается <b>addr</b>, записывается адрес сокета клиента, который установил соединение с сервером. В переменную, адресуемую указателем <b>addrlen</b>, изначально записывается размер структуры; функция <b>accept</b> записывает туда длину, которая реально была использована. Если вас не интересует адрес клиента, вы можете просто передать NULL в качестве второго и третьего параметров.</p>
+
+<p>Обратите внимание, что полученный от <b>accept</b> новый сокет связан с тем же самым адресом, что и слушающий сокет. Сначала это может показаться странным. Но дело в том, что адрес TCP-сокета не обязан быть уникальным в Internet-домене. Уникальными должны быть только <i>соединения</i>, для идентификации которых используются <i>два</i> адреса сокетов, между которыми происходит обмен данными.</p>
+
+
+<h3>Установка соединения (клиент)<a name="EZCAC"></a></h3>
+
+
+<p>На стороне клиента для установления соединения используется функция <b>connect</b>, которая имеет следующий прототип.</p>
+
+<div id="ECDAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+
+<span class="KEYWORD">int</span> connect(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">struct</span> sockaddr *serv_addr, <span class="KEYWORD">int</span> addrlen);
+</pre></td></tr></tbody></table></div>
+
+<p>Здесь <b>sockfd</b> - сокет, который будет использоваться для обмена данными с сервером, <b>serv_addr</b> содержит указатель на структуру с адресом сервера, а <b>addrlen</b> - длину этой структуры. Обычно сокет не требуется предварительно привязывать к локальному адресу, так как функция <b>connect</b> сделает это за вас, подобрав подходящий свободный порт. Вы можете принудительно назначить клиентскому сокету некоторый номер порта, используя <b>bind</b> перед вызовом <b>connect</b>. Делать это следует в случае, когда сервер соединяется с только с клиентами, использующими определённый порт (примерами таких серверов являются rlogind и rshd). В остальных случаях проще и надёжнее предоставить системе выбрать порт за вас.</p>
+
+
+<h3>Обмен данными<a name="EBEAC"></a></h3>
+
+
+<p>После того как соединение установлено, можно начинать обмен данными. Для этого используются функции <b>send</b> и <b>recv</b>. В Unix для работы с сокетами можно использовать также файловые функции <b>read</b> и <b>write</b>, но они обладают меньшими возможностями, а кроме того не будут работать на других платформах (например, под Windows), поэтому я не рекомендую ими пользоваться.</p>
+
+<p>Функция <b>send</b> используется для отправки данных и имеет следующий прототип.</p>
+
+<div id="EVEAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">int</span> send(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">const</span> <span class="KEYWORD">void</span> *msg, <span class="KEYWORD">int</span> len, <span class="KEYWORD">int</span> flags);
+</pre></td></tr></tbody></table></div>
+
+<p>Здесь <b>sockfd</b> - это, как всегда, дескриптор сокета, через который мы отправляем данные, <b>msg</b> - указатель на буфер с данными, <b>len</b> - длина буфера в байтах, а <b>flags</b> - набор битовых флагов, управляющих работой функции (если флаги не используются, передайте функции 0). Вот некоторые из них (полный список можно найти в документации):</p>
+
+<ul style="LIST-STYLE:square">
+<li><b>MSG_OOB</b>. Предписывает отправить данные как <i>срочные</i> (out of band data, OOB). Концепция срочных данных позволяет иметь два параллельных канала данных в одном соединении. Иногда это бывает удобно. Например, Telnet использует срочные данные для передачи команд типа Ctrl+C. В настоящее время использовать их не рекомендуется из-за проблем с совместимостью (существует два разных стандарта их использования, описанные в RFC793 и RFC1122). Безопаснее просто создать для срочных данных отдельное соединение.</li>
+<li><b>MSG_DONTROUTE</b>. Запрещает маршрутизацию пакетов. Нижележащие транспортные слои могут проигнорировать этот флаг.</li>
+</ul>
+
+<p>Функция <b>send</b> возвращает число байтов, которое на самом деле было отправлено (или -1 в случае ошибки). Это число может быть меньше указанного размера буфера. Если вы хотите отправить весь буфер целиком, вам придётся написать свою функцию и вызывать в ней <b>send</b>, пока все данные не будут отправлены. Она может выглядеть примерно так.</p>
+
+<div id="EDGAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">int</span> sendall(<span class="KEYWORD">int</span> s, <span class="KEYWORD">char</span> *buf, <span class="KEYWORD">int</span> len, <span class="KEYWORD">int</span> flags)
+{
+    <span class="KEYWORD">int</span> total = <span class="NUMBER">0</span>;
+    <span class="KEYWORD">int</span> n;
+
+    <span class="KEYWORD">while</span>(total &lt; len)
+    {
+        n = send(s, buf+total, len-total, flags);
+        <span class="KEYWORD">if</span>(n == -<span class="NUMBER">1</span>) { <span class="KEYWORD">break</span>; }
+        total += n;
+    }
+
+    <span class="KEYWORD">return</span> (n==-<span class="NUMBER">1</span> ? -<span class="NUMBER">1</span> : total);
+}</pre></td></tr></tbody></table></div>
+
+<p>Использование <b>sendall</b> ничем не отличается от использования <b>send</b>, но она отправляет весь буфер с данными целиком.</p>
+
+<p>Для чтения данных из сокета используется функция <b>recv</b>.</p>
+
+<div id="EPHAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">int</span> recv(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">void</span> *buf, <span class="KEYWORD">int</span> len, <span class="KEYWORD">int</span> flags);
+</pre></td></tr></tbody></table></div>
+
+<p>В целом её использование аналогично <b>send</b>. Она точно так же принимает дескриптор сокета, указатель на буфер и набор флагов. Флаг <b>MSG_OOB</b> используется для приёма срочных данных, а <b>MSG_PEEK</b> позволяет "подсмотреть" данные, полученные от удалённого хоста, не удаляя их из системного буфера (это означает, что при следующем обращении к <b>recv</b> вы получите те же самые данные). Полный список флагов можно найти в документации. По аналогии с <b>send</b> функция <b>recv</b> возвращает количество прочитанных байтов, которое может быть меньше размера буфера. Вы без труда сможете написать собственную функцию <b>recvall</b>, заполняющую буфер целиком. Существует ещё один особый случай, при котором <b>recv</b> возвращает 0. Это означает, что соединение было разорвано.</p>
+
+
+<h3>Закрытие сокета<a name="EQIAC"></a></h3>
+
+
+<p>Закончив обмен данными, закройте сокет с помощью функции <b>close</b>. Это приведёт к разрыву соединения.</p>
+
+<div id="EZIAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;unistd.h&gt;
+
+<span class="KEYWORD">int</span> close(<span class="KEYWORD">int</span> fd);
+</pre></td></tr></tbody></table></div>
+
+<p>Вы также можете запретить передачу данных в каком-то одном направлении, используя <b>shutdown</b>.</p>
+
+<div id="EHJAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">int</span> shutdown(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">int</span> how);
+</pre></td></tr></tbody></table></div>
+
+<p>Параметр <b>how</b> может принимать одно из следующих значений:</p>
+
+<ul style="LIST-STYLE:square">
+<li>0 - запретить чтение из сокета</li>
+<li>1 - запретить запись в сокет</li>
+<li>2 - запретить и то и другое</li>
+</ul>
+
+<p>Хотя после вызова <b>shutdown</b> с параметром <b>how</b>, равным 2, вы больше не сможете использовать сокет для обмена данными, вам всё равно потребуется вызвать <b>close</b>, чтобы освободить связанные с ним системные ресурсы.</p>
+
+
+<h3>Обработка ошибок<a name="EIKAC"></a></h3>
+
+
+<p>До сих пор я ни слова не сказал об ошибках, которые могут происходить (и часто происходят) в процессе работы с сокетами. Так вот: если что-то пошло не так, все рассмотренные нами функции возвращают -1, записывая в глобальную переменную <b>errno</b> код ошибки. Соответственно, вы можете проанализировать значение этой переменной и предпринять действия по восстановлению нормальной работы программы, не прерывая её выполнения. А можете просто выдать диагностическое сообщение (для этого удобно использовать функцию <b>perror</b>), а затем завершить программу с помощью <b>exit</b>. Именно так я буду поступать в демонстрационных примерах.</p>
+
+
+<h3>Отладка программ<a name="EWKAC"></a></h3>
+
+
+<p>Начинающие программисты часто спрашивают, как можно отлаживать сетевую программу, если под рукой нет сети. Оказывается, можно обойтись и без неё. Достаточно запустить клиента и сервера на одной машине, а затем использовать для соединения адрес <i>интерфейса внутренней петли</i> (loopback interface). В программе ему соответствует константа INADDR_LOOPBACK (не забудьте применять к ней функцию <b>htonl</b>!). Пакеты, направляемые по этому адресу, в сеть не попадают. Вместо этого они передаются стеку протоколов TCP/IP как только что принятые. Таким образом моделируется наличие виртуальной сети, в которой вы можете отлаживать ваши сетевые приложения.</p>
+
+<p>Для простоты я буду использовать в демонстрационных примерах интерфейс внутренней петли.</p>
+
+
+<h3>Эхо-клиент и эхо-сервер<a name="EELAC"></a></h3>
+
+
+<p>Теперь, когда мы изучили основные функции для работы с сокетами, самое время посмотреть, как они используются на практике. Для этого я написал две небольшие демонстрационные программы. Эхо-клиент посылает сообщение "Hello there!" и выводит на экран ответ сервера. Его код приведён в листинге 1. Эхо-сервер читает всё, что передаёт ему клиент, а затем просто отправляет полученные данные обратно. Его код содержится в листинге 2.</p>
+
+<p><b>Листинг 1. Эхо-клиент.</b></p>
+
+<div id="ENLAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;netinet/in.h&gt;
+
+<span class="KEYWORD">char</span> message[] = <span class="STRING">"Hello there!\n"</span>;
+<span class="KEYWORD">char</span> buf[<span class="KEYWORD">sizeof</span>(message)];
+
+<span class="KEYWORD">int</span> <span class="KEYWORD">main</span>()
+{
+    <span class="KEYWORD">int</span> sock;
+    <span class="KEYWORD">struct</span> sockaddr_in addr;
+
+    sock = socket(AF_INET, SOCK_STREAM, <span class="NUMBER">0</span>);
+    <span class="KEYWORD">if</span>(sock &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"socket"</span>);
+        exit(<span class="NUMBER">1</span>);
+    }
+
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(<span class="NUMBER">3425</span>); <span class="COMMENT">// или любой другой порт...</span>
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    <span class="KEYWORD">if</span>(connect(sock, (<span class="KEYWORD">struct</span> sockaddr *)&amp;addr, <span class="KEYWORD">sizeof</span>(addr)) &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"connect"</span>);
+        exit(<span class="NUMBER">2</span>);
+    }
+
+    send(sock, message, <span class="KEYWORD">sizeof</span>(message), <span class="NUMBER">0</span>);
+    recv(sock, buf, <span class="KEYWORD">sizeof</span>(message), <span class="NUMBER">0</span>);
+    
+    printf(buf);
+    close(sock);
+
+    <span class="KEYWORD">return</span> <span class="NUMBER">0</span>;
+}</pre></td></tr></tbody></table></div>
+
+<p><b>Листинг 2. Эхо-сервер.</b></p>
+
+<div id="EONAC"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;netinet/in.h&gt;
+
+<span class="KEYWORD">int</span> <span class="KEYWORD">main</span>()
+{
+    <span class="KEYWORD">int</span> sock, listener;
+    <span class="KEYWORD">struct</span> sockaddr_in addr;
+    <span class="KEYWORD">char</span> buf[<span class="NUMBER">1024</span>];
+    <span class="KEYWORD">int</span> bytes_read;
+
+    listener = socket(AF_INET, SOCK_STREAM, <span class="NUMBER">0</span>);
+    <span class="KEYWORD">if</span>(listener &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"socket"</span>);
+        exit(<span class="NUMBER">1</span>);
+    }
+    
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(<span class="NUMBER">3425</span>);
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    <span class="KEYWORD">if</span>(bind(listener, (<span class="KEYWORD">struct</span> sockaddr *)&amp;addr, <span class="KEYWORD">sizeof</span>(addr)) &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"bind"</span>);
+        exit(<span class="NUMBER">2</span>);
+    }
+
+    listen(listener, <span class="NUMBER">1</span>);
+    
+    <span class="KEYWORD">while</span>(<span class="NUMBER">1</span>)
+    {
+        sock = accept(listener, NULL, NULL);
+        <span class="KEYWORD">if</span>(sock &lt; <span class="NUMBER">0</span>)
+        {
+            perror(<span class="STRING">"accept"</span>);
+            exit(<span class="NUMBER">3</span>);
+        }
+
+        <span class="KEYWORD">while</span>(<span class="NUMBER">1</span>)
+        {
+            bytes_read = recv(sock, buf, <span class="NUMBER">1024</span>, <span class="NUMBER">0</span>);
+            <span class="KEYWORD">if</span>(bytes_read &lt;= <span class="NUMBER">0</span>) <span class="KEYWORD">break</span>;
+            send(sock, buf, bytes_read, <span class="NUMBER">0</span>);
+        }
+    
+        close(sock);
+    }
+    
+    <span class="KEYWORD">return</span> <span class="NUMBER">0</span>;
+}
+</pre></td></tr></tbody></table></div>
+
+<h2>Обмен датаграммами<a name="ECAAE"></a></h2>
+
+
+<p>Как уже говорилось, датаграммы используются в программах довольно редко. В большинстве случаев надёжность передачи критична для приложения, и вместо изобретения собственного надёжного протокола поверх UDP программисты предпочитают использовать TCP. Тем не менее, иногда датаграммы оказываются полезны. Например, их удобно использовать при транслировании звука или видео по сети в реальном времени, особенно при широковещательном транслировании.</p>
+
+<p>Поскольку для обмена датаграммами не нужно устанавливать соединение, использовать их гораздо проще. Создав сокет с помощью <b>socket</b> и <b>bind</b>, вы можете тут же использовать его для отправки или получения данных. Для этого вам понадобятся функции <b>sendto</b> и <b>recvfrom</b>.</p>
+
+<div id="ETAAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">int</span> sendto(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">const</span> <span class="KEYWORD">void</span> *msg, <span class="KEYWORD">int</span> len, <span class="KEYWORD">unsigned</span> <span class="KEYWORD">int</span> flags,
+               <span class="KEYWORD">const</span> <span class="KEYWORD">struct</span> sockaddr *to, <span class="KEYWORD">int</span> tolen);
+<span class="KEYWORD">int</span> recvfrom(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">void</span> *buf, <span class="KEYWORD">int</span> len, <span class="KEYWORD">unsigned</span> <span class="KEYWORD">int</span> flags,
+                 <span class="KEYWORD">struct</span> sockaddr *from, <span class="KEYWORD">int</span> *fromlen);
+</pre></td></tr></tbody></table></div>
+
+<p>Функция <b>sendto</b> очень похожа на <b>send</b>. Два дополнительных параметра <b>to</b> и <b>tolen</b> используются для указания адреса получателя. Для задания адреса используется структура <b>sockaddr</b>, как и в случае с функцией <b>connect</b>. Функция <b>recvfrom</b> работает аналогично <b>recv</b>. Получив очередное сообщение, она записывает его адрес в структуру, на которую ссылается <b>from</b>, а записанное количество байт - в переменную, адресуемую указателем <b>fromlen</b>. Как мы знаем, аналогичным образом работает функция <b>accept</b>.</p>
+
+<p>Некоторую путаницу вносят <i>присоединённые датаграммные сокеты</i> (connected datagram sockets). Дело в том, что для сокета с типом SOCK_DGRAM тоже можно вызвать функцию <b>connect</b>, а затем использовать <b>send</b> и <b>recv</b> для обмена данными. Нужно понимать, что никакого соединения при этом не устанавливается. Операционная система просто запоминает адрес, который вы передали функции <b>connect</b>, а затем использует его при отправке данных. Обратите внимание, что присоединённый сокет может получать данные <i>только</i> от сокета, с которым он соединён.</p>
+
+<p>Для иллюстрации процесса обмена датаграммами я написал две небольшие программы - sender (листинг 3) и receiver (листинг 4). Первая отправляет сообщения "Hello there!" и "Bye bye!", а вторая получает их и печатает на экране. Программа sender демонстрирует применение как обычного, так и присоединённого сокета, а receiver использует обычный.</p>
+
+<p><b>Листинг 3. Программа sender.</b></p>
+
+<div id="EHDAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;netinet/in.h&gt;
+
+<span class="KEYWORD">char</span> msg1[] = <span class="STRING">"Hello there!\n"</span>;
+<span class="KEYWORD">char</span> msg2[] = <span class="STRING">"Bye bye!\n"</span>;
+
+<span class="KEYWORD">int</span> <span class="KEYWORD">main</span>()
+{
+    <span class="KEYWORD">int</span> sock;
+    <span class="KEYWORD">struct</span> sockaddr_in addr;
+
+    sock = socket(AF_INET, SOCK_DGRAM, <span class="NUMBER">0</span>);
+    <span class="KEYWORD">if</span>(sock &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"socket"</span>);
+        exit(<span class="NUMBER">1</span>);
+    }
+
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(<span class="NUMBER">3425</span>);
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    sendto(sock, msg1, <span class="KEYWORD">sizeof</span>(msg1), <span class="NUMBER">0</span>,
+           (<span class="KEYWORD">struct</span> sockaddr *)&amp;addr, <span class="KEYWORD">sizeof</span>(addr));
+
+    connect(sock, (<span class="KEYWORD">struct</span> sockaddr *)&amp;addr, <span class="KEYWORD">sizeof</span>(addr));
+    send(sock, msg2, <span class="KEYWORD">sizeof</span>(msg2), <span class="NUMBER">0</span>);
+
+    close(sock);
+
+    <span class="KEYWORD">return</span> <span class="NUMBER">0</span>;
+}</pre></td></tr></tbody></table></div>
+
+<p><b>Листинг 4. Программа receiver.</b></p>
+
+<div id="ECFAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;netinet/in.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;stdio.h&gt;
+
+<span class="KEYWORD">int</span> <span class="KEYWORD">main</span>()
+{
+    <span class="KEYWORD">int</span> sock;
+    <span class="KEYWORD">struct</span> sockaddr_in addr;
+    <span class="KEYWORD">char</span> buf[<span class="NUMBER">1024</span>];
+    <span class="KEYWORD">int</span> bytes_read;
+
+    sock = socket(AF_INET, SOCK_DGRAM, <span class="NUMBER">0</span>);
+    <span class="KEYWORD">if</span>(sock &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"socket"</span>);
+        exit(<span class="NUMBER">1</span>);
+    }
+    
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(<span class="NUMBER">3425</span>);
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    <span class="KEYWORD">if</span>(bind(sock, (<span class="KEYWORD">struct</span> sockaddr *)&amp;addr, <span class="KEYWORD">sizeof</span>(addr)) &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"bind"</span>);
+        exit(<span class="NUMBER">2</span>);
+    }
+
+    <span class="KEYWORD">while</span>(<span class="NUMBER">1</span>)
+    {
+        bytes_read = recvfrom(sock, buf, <span class="NUMBER">1024</span>, <span class="NUMBER">0</span>, NULL, NULL);
+        buf[bytes_read] = <span class="CHARACTER">'\0'</span>;
+        printf(buf);
+    }
+    
+    <span class="KEYWORD">return</span> <span class="NUMBER">0</span>;
+}</pre></td></tr></tbody></table></div>
+<h2>Использование низкоуровневых сокетов<a name="ECHAE"></a></h2>
+
+
+<p>Низкоуровневые сокеты открывают перед вами новые горизонты. Они предоставляют программисту полный контроль над содержимым пакетов, которые отправляются в путешествие по сети. С другой стороны, они сложнее в использовании и обладают плохой переносимостью. Вот почему использовать их следует только в случае необходимости. Например, без них не обойтись при разработке системных утилит типа ping и traceroute.</p>
+
+<p>Первым делом выясним, чем низкоуровневые сокеты отличаются от обычных. Работая с обычными сокетами, вы передаёте системе "чистые" данные, а она сама заботится о добавлении к ним необходимых заголовков (а иногда ещё и концевиков). Например, когда вы посылаете сообщение через UDP-сокет, к нему добавляется сначала UDP-заголовок, потом IP-заголовок, а в самом конце - заголовок аппаратного протокола, который используется в вашей локальной сети (например, Ethernet). В результате получается кадр, показанный на рисунке 1.</p>
+
+<p style="text-align: center;"><img src="./Программирование сокетов в Linux_files/sock1.gif"><br><i style="font-face: verdana; font-size:x-small;">Рисунок 1</i></p>
+
+<p>Низкоуровневые сокеты позволяют вам включать в буфер с данными заголовки некоторых протоколов. Например, вы можете включить в ваше сообщение TCP- или UDP-заголовок, предоставив системе сформировать для вас IP-заголовок, а можете вообще сформировать все заголовки самостоятельно. Разумеется, при этом вам придётся изучить работу соответствующих протоколов и строго соблюсти формат их заголовков, иначе программа работать не будет.</p>
+
+<p>При работе с низкоуровневыми сокетами вам придётся указывать в третьем параметре функции <b>socket</b> тот протокол, к заголовкам которого вы хотите получить доступ. Константы для основных протоколов Internet объявлены в файле <b>netinet/in.h</b>. Они имеют вид <b>IPPROTO_XXX</b>, где XXX-название протокола: <b>IPPROTO_TCP</b>, <b>IPPROTO_UDP</b>, <b>IPPROTO_RAW</b> (в последнем случае вы получите возможность поработать с "сырым" IP и формировать IP-заголовки вручную).</p>
+
+<table class="warning" width="98%"><tbody><tr><td>Все числовые данные в заголовках должны записываться в сетевом формате. Поэтому не забывайте использовать функции <b>htons</b> и <b>htonl</b>.</td></tr></tbody></table>
+
+<p>Чтобы проиллюстрировать всё это примером, я переписал программу sender из предыдущего раздела с использованием низкоуровневых UDP-сокетов. При этом мне пришлось вручную формировать UDP-заголовок отправляемого сообщения. Я выбрал для примера UDP, потому что у этого протокола заголовок выглядит совсем просто (рисунок 2).</p>
+
+<p style="text-align: center;"><img src="./Программирование сокетов в Linux_files/sock2.gif"><br><i style="font-face: verdana; font-size:x-small;">Рисунок 2</i></p>
+
+<p>Код примера приведён в листинге 5. Хочу обратить ваше внимание на несколько моментов. Во-первых, я не стал задавать номер порта в структуре <b>sockaddr_in</b>. Поскольку этот номер содержится в UDP-заголовке, от поля <b>sin_port</b> уже ничего не зависит. Во-вторых, я записал в качестве контрольной суммы ноль, чтобы не утомлять вас её вычислением. Протокол UDP является ненадёжным по своей природе, поэтому он допускает подобную вольность. Но другие протоколы (например, IP) могут и не допускать. Наконец, обратите внимание, что все данные UDP-заголовка форматируются с использованием <b>htons</b>.</p>
+
+<p><b>Листинг 5. Программа sender с использованием низкоуровневых сокетов.</b></p>
+
+<div id="EYIAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;netinet/in.h&gt;
+
+<span class="KEYWORD">struct</span> UdpHeader
+{
+    u_short src_port;
+    u_short targ_port;
+    u_short length;
+    u_short checksum;
+};
+
+<span class="KEYWORD">char</span> message[] = <span class="STRING">"Hello there!\n"</span>;
+<span class="KEYWORD">char</span> msgbuf[<span class="NUMBER">1024</span>];
+
+<span class="KEYWORD">int</span> <span class="KEYWORD">main</span>()
+{
+    <span class="KEYWORD">int</span> sock;
+    <span class="KEYWORD">struct</span> sockaddr_in addr;
+    <span class="KEYWORD">struct</span> UdpHeader header;
+
+    sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
+    <span class="KEYWORD">if</span>(sock &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"socket"</span>);
+        exit(<span class="NUMBER">1</span>);
+    }
+
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    
+    header.targ_port = htons(<span class="NUMBER">3425</span>);
+    header.length = htons(<span class="KEYWORD">sizeof</span>(header)+<span class="KEYWORD">sizeof</span>(message));
+    header.checksum = <span class="NUMBER">0</span>;
+    
+    memcpy((<span class="KEYWORD">void</span> *)msgbuf, (<span class="KEYWORD">void</span> *)&amp;header, <span class="KEYWORD">sizeof</span>(header));
+    memcpy((<span class="KEYWORD">void</span> *)(msgbuf+<span class="KEYWORD">sizeof</span>(header)), (<span class="KEYWORD">void</span> *)message, <span class="KEYWORD">sizeof</span>(message));
+
+    sendto(sock, msgbuf, <span class="KEYWORD">sizeof</span>(header)+<span class="KEYWORD">sizeof</span>(message), <span class="NUMBER">0</span>,
+           (<span class="KEYWORD">struct</span> sockaddr *)&amp;addr, <span class="KEYWORD">sizeof</span>(addr));
+
+    close(sock);
+
+    <span class="KEYWORD">return</span> <span class="NUMBER">0</span>;
+}</pre></td></tr></tbody></table></div>
+<h2>Функции для работы с адресами и DNS<a name="EBLAE"></a></h2>
+
+
+<p>В этом разделе мы обсудим несколько функций, без которых можно написать учебный пример, но без которых вряд ли обойдётся реальная программа. Поскольку для идентификации хостов в Internet широко используются доменные имена, мы должны изучить механизм преобразования их в IP-адреса. Кроме того мы изучим несколько удобных вспомогательных функций.</p>
+
+<p>IP-адреса принято записывать в виде четырёх чисел, разделённых точками. Для преобразования адреса, записанного в таком формате, в число и наоборот используется семейство функций <b>inet_addr</b>, <b>inet_aton</b> и <b>inet_ntoa</b>.</p>
+
+
+<div id="EQLAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;netinet/in.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;arpa/inet.h&gt;
+
+<span class="KEYWORD">int</span> inet_aton(<span class="KEYWORD">const</span> <span class="KEYWORD">char</span> *cp, <span class="KEYWORD">struct</span> in_addr *in_p);
+<span class="KEYWORD">unsigned</span> <span class="KEYWORD">long</span> <span class="KEYWORD">int</span> inet_addr(<span class="KEYWORD">const</span> <span class="KEYWORD">char</span> *cp);
+<span class="KEYWORD">char</span> *inet_ntoa(<span class="KEYWORD">struct</span> in_addr in);</pre></td></tr></tbody></table></div>
+
+<p>Функция <b>inet_addr</b> часто используется в программах. Она принимает строку и возвращает адрес (уже с сетевым порядком следования байтов). Проблема с этой функцией состоит в том, что значение -1, возвращаемое ею в случае ошибки, является в то же время корректным адресом 255.255.255.255 (широковещательный адрес). Вот почему сейчас рекомендуется использовать более новую функцию <b>inet_aton</b> (Ascii TO Network). Для обратного преобразования используется функция <b>inet_ntoa</b> (Network TO Ascii). Обе эти функции работают с адресами в сетевом формате. Обратите внимание, что в случае ошибки они возвращают 0, а не -1.</p>
+
+<p>Для преобразования доменного имени в IP-адрес используется функция <b>gethostbyname</b>.</p>
+
+<div id="E3MAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;netdb.h&gt;
+    
+<span class="KEYWORD">struct</span> hostent *gethostbyname(<span class="KEYWORD">const</span> <span class="KEYWORD">char</span> *name);
+</pre></td></tr></tbody></table></div>
+
+<p>Эта функция получает имя хоста и возвращает указатель на структуру с его описанием. Рассмотрим эту структуру более подробно.</p>
+
+<div id="EJNAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">struct</span> hostent {
+    <span class="KEYWORD">char</span>    *h_name;
+    <span class="KEYWORD">char</span>    **h_aliases;
+    <span class="KEYWORD">int</span>     h_addrtype;
+    <span class="KEYWORD">int</span>     h_length;
+    <span class="KEYWORD">char</span>    **h_addr_list;
+};
+<span class="PREPROCESSOR">#define</span> h_addr h_addr_list[<span class="NUMBER">0</span>]
+</pre></td></tr></tbody></table></div>
+
+<ul style="LIST-STYLE:square">
+<li><b>h_name</b>. Имя хоста.</li>
+<li><b>h_aliases</b>. Массив строк, содержащих псевдонимы хоста. Завершается значением NULL.</li>
+<li><b>h_addrtype</b>. Тип адреса. Для Internet-домена - <b>AF_INET</b>.</li>
+<li><b>h_length</b>. Длина адреса в байтах.</li>
+<li><b>h_addr_list</b>. Массив, содержащий адреса всех сетевых интерфейсов хоста. Завершается нулём. Обратите внимание, что байты каждого адреса хранятся с сетевым порядке, поэтому <b>htonl</b> вызывать не нужно.</li>
+</ul>
+
+<p>Как видим, <b>gethostbyname</b> возвращает достаточно полную информацию. Если нас интересует адрес хоста, мы можем выбрать его из массива <b>h_addr_list</b>. Часто берут самый первый адрес (как мы видели выше, для ссылки на него определён специальный макрос <b>h_addr</b>). Для определения имени хоста по адресу используется функция <b>gethostbyaddr</b>. Вместо строки она получает адрес (в виде <b>sockaddr</b>) и возвращает указатель на ту же самую структуру <b>hostent</b>. Используя эти две функции, нужно помнить, что они сообщают об ошибке не так, как остальные: вместо указателя возвращается <b>NULL</b>, а расширенный код ошибки записывается в глобальную переменную <b>h_errno</b> (а не <b>errno</b>). Соответственно, для вывода диагностического сообщения следует использовать <b>herror</b> вместо <b>perror</b>.</p>
+
+<table class="warning" width="98%"><tbody><tr><td>Следует иметь в виду, что функции <b>gethostbyname</b> и <b>gethostbyaddr</b> возвращают указатель на статическую область памяти. Это означает, что каждое новое обращение к одной из этих функций приведёт к перезаписи данных, полученных при преыдущем обращении.</td></tr></tbody></table>
+
+<p>В заключение рассмотрим ещё одно семейство полезных функций - <b>gethostname</b>, <b>getsockname</b> и <b>getpeername</b>.</p>
+
+<div id="EAQAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;unistd.h&gt;
+
+<span class="KEYWORD">int</span> gethostname(<span class="KEYWORD">char</span> *hostname, size_t size);
+</pre></td></tr></tbody></table></div>
+
+<p>Функция <b>gethostname</b> используется для получения имени локального хоста. Далее его можно преобразовать в адрес при помощи <b>gethostbyname</b>. Это даёт нам способ в любой момент программно получить адрес машины, на которой выполняется наша программа, что может быть полезным во многих случаях.</p>
+
+<div id="EQQAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+
+<span class="KEYWORD">int</span> getpeername(<span class="KEYWORD">int</span> sockfd, <span class="KEYWORD">struct</span> sockaddr *addr, <span class="KEYWORD">int</span> *addrlen);
+</pre></td></tr></tbody></table></div>
+
+<p>Функция <b>getpeername</b> позволяет в любой момент узнать адрес сокета на "другом конце" соединения. Она получает дескриптор сокета, соединённого с удалённым хостом, и записывает адрес этого хоста в структуру, на которую указывает <b>addr</b>. Фактическое количество записанных байт помещается по адресу <b>addrlen</b> (не забудьте записать туда размер структуры <b>addr</b> до вызова <b>getpeername</b>). Полученный адрес при необходимости можно преобразовать в строку, используя <b>inet_ntoa</b> или <b>gethostbyaddr</b>. Функция <b>getsockname</b> по назначению обратна <b>getpeername</b> и позволяет определить адрес сокета на "нашем конце" соединения.</p>
+<h2>Параллельное обслуживание клиентов<a name="ETRAE"></a></h2>
+
+
+<p>Следующий важный вопрос, который нам предстоит обсудить, - это параллельное обслуживание клиентов. Эта проблема становится актуальной, когда сервер должен обслуживать большое количество запросов. Конечно, на машине с одним процессором настоящей параллельности достичь не удастся. Но даже на одной машине можно добиться существенного выигрыша в производительности. Допустим, сервер отправил какие-то данные клиенту и ждёт подтверждения. Пока оно путешествует по сети, сервер вполне мог бы заняться другими клиентами. Для реализации такого алгоритма обслуживания существует множество способов, но чаще всего применяются два из них.</p>
+
+<h3>Способ 1<a name="EZRAE"></a></h3>
+
+
+<p>Этот способ подразумевает создание дочернего процесса для обслуживания каждого нового клиента. При этом родительский процесс занимается только прослушиванием порта и приёмом соединений. Чтобы добиться такого поведения, сразу после <b>accept</b> сервер вызывает функцию <b>fork</b> для создания дочернего процесса (я предполагаю, что вам знакома функция <b>fork</b>; если нет, обратитесь к документации). Далее анализируется значение, которое вернула эта функция. В родительском процессе оно содержит идентификатор дочернего, а в дочернем процессе равно нулю. Используя этот признак, мы переходим к очередному вызову <b>accept</b> в родительском процессе, а дочерний процесс обслуживает клиента и завершается (<b>_exit</b>).</p>
+
+<p>С использованием этой методики наш эхо-сервер перепишется, как показано в листинге 6.</p>
+
+<p><b>Листинг 6. Эхо-сервер (версия 2, fork)</b></p>
+
+<div id="EPSAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;netinet/in.h&gt;
+
+<span class="KEYWORD">int</span> <span class="KEYWORD">main</span>()
+{
+    <span class="KEYWORD">int</span> sock, listener;
+    <span class="KEYWORD">struct</span> sockaddr_in addr;
+    <span class="KEYWORD">char</span> buf[<span class="NUMBER">1024</span>];
+    <span class="KEYWORD">int</span> bytes_read;
+
+    listener = socket(AF_INET, SOCK_STREAM, <span class="NUMBER">0</span>);
+    <span class="KEYWORD">if</span>(listener &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"socket"</span>);
+        exit(<span class="NUMBER">1</span>);
+    }
+    
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(<span class="NUMBER">3425</span>);
+    addr.sin_addr.s_addr = INADDR_ANY;
+    <span class="KEYWORD">if</span>(bind(listener, (<span class="KEYWORD">struct</span> sockaddr *)&amp;addr, <span class="KEYWORD">sizeof</span>(addr)) &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"bind"</span>);
+        exit(<span class="NUMBER">2</span>);
+    }
+
+    listen(listener, <span class="NUMBER">1</span>);
+    
+    <span class="KEYWORD">while</span>(<span class="NUMBER">1</span>)
+    {
+        sock = accept(listener, NULL, NULL);
+        <span class="KEYWORD">if</span>(sock &lt; <span class="NUMBER">0</span>)
+        {
+            perror(<span class="STRING">"accept"</span>);
+            exit(<span class="NUMBER">3</span>);
+        }
+        
+        <span class="KEYWORD">switch</span>(fork())
+        {
+        <span class="KEYWORD">case</span> -<span class="NUMBER">1</span>:
+            perror(<span class="STRING">"fork"</span>);
+            <span class="KEYWORD">break</span>;
+            
+        <span class="KEYWORD">case</span> <span class="NUMBER">0</span>:
+            close(listener);
+            <span class="KEYWORD">while</span>(<span class="NUMBER">1</span>)
+            {
+                bytes_read = recv(sock, buf, <span class="NUMBER">1024</span>, <span class="NUMBER">0</span>);
+                <span class="KEYWORD">if</span>(bytes_read &lt;= <span class="NUMBER">0</span>) <span class="KEYWORD">break</span>;
+                send(sock, buf, bytes_read, <span class="NUMBER">0</span>);
+            }
+
+            close(sock);
+            _exit(<span class="NUMBER">0</span>);
+            
+        <span class="KEYWORD">default</span>:
+            close(sock);
+        }
+    }
+    
+    close(listener);
+
+    <span class="KEYWORD">return</span> <span class="NUMBER">0</span>;
+}</pre></td></tr></tbody></table></div>
+
+<p>Очевидное преимущество такого подхода состоит в том, что он позволяет писать весьма компактные, понятные программы, в которых код установки соединения отделён от кода обслуживания клиента. К сожалению, у него есть и недостатки. Во-первых, если клиентов очень много, создание нового процесса для обслуживания каждого из них может оказаться слишком дорогостоящей операцией. Во-вторых, такой способ неявно подразумевает, что все клиенты обслуживаются независимо друг от друга. Однако это может быть не так. Если, к примеру, вы пишете чат-сервер, то ваша основная задача - поддерживать взаимодействие всех клиентов, присоединившихся к нему. В этих условиях границы между процессами станут для вас серьёзной помехой. В подобном случае вам следует серьёзно рассмотреть другой способ обслуживания клиентов.</p>
+
+
+<h3>Способ 2<a name="EVVAE"></a></h3>
+
+
+<p>Второй способ основан на использовании <i>неблокирующих сокетов</i> (nonblocking sockets) и функции <b>select</b>. Сначала разберёмся, что такое неблокирующие сокеты. Сокеты, которые мы до сих пор использовали, являлись <i>блокирующими</i> (blocking). Это название означает, что на время выполнения операции с таким сокетом ваша программа блокируется. Например, если вы вызвали <b>recv</b>, а данных на вашем конце соединения нет, то в ожидании их прихода ваша программа "засыпает". Аналогичная ситуация наблюдается, когда вы вызываете <b>accept</b>, а очередь запросов на соединение пуста. Это поведение можно изменить, используя функцию <b>fcntl</b>.</p>
+
+<div id="EIWAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;unistd.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;fcntl.h&gt;
+.
+.
+sockfd = socket(AF_INET, SOCK_STREAM, <span class="NUMBER">0</span>);
+fcntl(sockfd, F_SETFL, O_NONBLOCK);
+.
+.
+</pre></td></tr></tbody></table></div>
+
+<p>Эта несложная операция превращает сокет в неблокирующий. Вызов любой функции с таким сокетом будет возвращать управление немедленно. Причём если затребованная операция не была выполнена до конца, функция вернёт -1 и запишет в <b>errno</b> значение <b>EWOULDBLOCK</b>. Чтобы дождаться завершения операции, мы можем опрашивать все наши сокеты в цикле, пока какая-то функция не вернёт значение, отличное от <b>EWOULDBLOCK</b>. Как только это произойдёт, мы можем запустить на выполнение следующую операцию с этим сокетом и вернуться к нашему опрашивающему циклу. Такая тактика (называемая в англоязычной литературе polling) работоспособна, но очень неэффективна, поскольку процессорное время тратится впустую на многократные (и безрезультатные) опросы.</p>
+
+<p>Чтобы исправить ситуацию, используют функцию <b>select</b>. Эта функция позволяет отслеживать состояние нескольких файловых дескрипторов (а в Unix к ним относятся и сокеты) одновременно.</p>
+
+<div id="E6WAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/time.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;unistd.h&gt;
+
+<span class="KEYWORD">int</span> select(<span class="KEYWORD">int</span> n, fd_set *readfds, fd_set *writefds,
+                fd_set *exceptfds, <span class="KEYWORD">struct</span> timeval *timeout);
+
+FD_CLR(<span class="KEYWORD">int</span> fd, fd_set *set);
+FD_ISSET(<span class="KEYWORD">int</span> fd, fd_set *set);
+FD_SET(<span class="KEYWORD">int</span> fd, fd_set *set);
+FD_ZERO(<span class="KEYWORD">int</span> fd);</pre></td></tr></tbody></table></div>
+
+<p>Функция <b>select</b> работает с тремя множествами дескрипторов, каждое из которых имеет тип <b>fd_set</b>. В множество <b>readfds</b> записываются дескрипторы сокетов, из которых нам требуется читать данные (слушающие сокеты добавляются в это же множество). Множество <b>writefds</b> должно содержать дескрипторы сокетов, в которые мы собираемся писать, а <b>exceptfds</b> - дескрипторы сокетов, которые нужно контролировать на возникновение ошибки. Если какое-то множество вас не интересуют, вы можете передать вместо указателя на него <b>NULL</b>. Что касается других параметров, в <b>n</b> нужно записать максимальное значение дескриптора по всем множествам плюс единица, а в <b>timeout</b> - величину таймаута. Структура <b>timeval</b> имеет следующий формат.</p>
+
+<div id="EKYAE"><table class="code" width="98%"><tbody><tr><td><pre><span class="KEYWORD">struct</span> timeval {
+    <span class="KEYWORD">int</span> tv_sec;     <span class="COMMENT">// секунды</span>
+    <span class="KEYWORD">int</span> tv_usec;    <span class="COMMENT">// микросекунды</span>
+};
+</pre></td></tr></tbody></table></div>
+
+<p>Поле "микросекунды" смотрится впечатляюще. Но на практике вам не добиться такой точности измерения времени при использовании <b>select</b>. Реальная точность окажется в районе 100 миллисекунд.</p>
+
+<p>Теперь займёмся множествами дескрипторов. Для работы с ними предусмотрены функции <b>FD_XXX</b>, показанные выше; их использование полностью скрывает от нас детали внутреннего устройства <b>fd_set</b>. Рассмотрим их назначение.</p>
+
+<ul style="LIST-STYLE:square">
+<li><b>FD_ZERO(fd_set *set)</b> - очищает множество <b>set</b></li>
+<li><b>FD_SET(int fd, fd_set *set)</b> - добавляет дескриптор <b>fd</b> в множество <b>set</b></li>
+<li><b>FD_CLR(int fd, fd_set *set)</b> - удаляет дескриптор <b>fd</b> из множества <b>set</b></li>
+<li><b>FD_ISSET(int fd, fd_set *set)</b> - проверяет, содержится ли дескриптор <b>fd</b> в множестве <b>set</b></li>
+</ul>
+
+<p>Если хотя бы один сокет готов к выполнению заданной операции, <b>select</b> возвращает ненулевое значение, а все дескрипторы, которые привели к "срабатыванию" функции, записываются в соответствующие множества. Это позволяет нам проанализировать содержащиеся в множествах дескрипторы и выполнить над ними необходимые действия. Если сработал таймаут, <b>select</b> возвращает ноль, а в случае ошибки -1. Расширенный код записывается в <b>errno</b>.</p>
+
+<p>Программы, использующие неблокирующие сокеты вместе с <b>select</b>, получаются весьма запутанными. Если в случае с <b>fork</b> мы строим логику программы, как будто клиент всего один, здесь программа вынуждена отслеживать дескрипторы <i>всех</i> клиентов и работать с ними параллельно. Чтобы проиллюстрировать эту методику, я в очередной раз переписал эхо-сервер с использованием <b>select</b>. Новая версия приведена в листинге 7. Обратите внимание, что эта программа, в отличие от всех остальных, написана на C++ (а не на C). Я воспользовался классом <b>set</b> из библиотеки STL языка C++, чтобы облегчить работу с набором дескрипторов и сделать её более понятной.</p>
+
+<p><b>Листинг 7. Эхо-сервер (версия 3, неблокирующие сокеты и select).</b></p>
+
+<div id="EZ1AE"><table class="code" width="98%"><tbody><tr><td><pre><span class="PREPROCESSOR">#include</span> &lt;sys/types.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/socket.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;sys/time.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;netinet/in.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;stdio.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;unistd.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;fcntl.h&gt;
+<span class="PREPROCESSOR">#include</span> &lt;algorithm&gt;
+<span class="PREPROCESSOR">#include</span> &lt;set&gt;
+<span class="KEYWORD">using</span> <span class="KEYWORD">namespace</span> std;
+
+<span class="KEYWORD">int</span> <span class="KEYWORD">main</span>()
+{
+    <span class="KEYWORD">int</span> listener;
+    <span class="KEYWORD">struct</span> sockaddr_in addr;
+    <span class="KEYWORD">char</span> buf[<span class="NUMBER">1024</span>];
+    <span class="KEYWORD">int</span> bytes_read;
+
+    listener = socket(AF_INET, SOCK_STREAM, <span class="NUMBER">0</span>);
+    <span class="KEYWORD">if</span>(listener &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"socket"</span>);
+        exit(<span class="NUMBER">1</span>);
+    }
+    
+    fcntl(listener, F_SETFL, O_NONBLOCK);
+    
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(<span class="NUMBER">3425</span>);
+    addr.sin_addr.s_addr = INADDR_ANY;
+    <span class="KEYWORD">if</span>(bind(listener, (<span class="KEYWORD">struct</span> sockaddr *)&amp;addr, <span class="KEYWORD">sizeof</span>(addr)) &lt; <span class="NUMBER">0</span>)
+    {
+        perror(<span class="STRING">"bind"</span>);
+        exit(<span class="NUMBER">2</span>);
+    }
+
+    listen(listener, <span class="NUMBER">2</span>);
+    
+    set&lt;<span class="KEYWORD">int</span>&gt; clients;
+    clients.clear();
+
+    <span class="KEYWORD">while</span>(<span class="NUMBER">1</span>)
+    {
+        <span class="COMMENT">// Заполняем множество сокетов</span>
+        fd_set readset;
+        FD_ZERO(&amp;readset);
+        FD_SET(listener, &amp;readset);
+
+        <span class="KEYWORD">for</span>(set&lt;<span class="KEYWORD">int</span>&gt;::iterator it = clients.begin(); it != clients.end(); it++)
+            FD_SET(*it, &amp;readset);
+
+        <span class="COMMENT">// Задаём таймаут</span>
+        timeval timeout;
+        timeout.tv_sec = <span class="NUMBER">15</span>;
+        timeout.tv_usec = <span class="NUMBER">0</span>;
+
+        <span class="COMMENT">// Ждём события в одном из сокетов</span>
+        <span class="KEYWORD">int</span> mx = max(listener, *max_element(clients.begin(), clients.end()));
+        <span class="KEYWORD">if</span>(select(mx+<span class="NUMBER">1</span>, &amp;readset, NULL, NULL, &amp;timeout) &lt;= <span class="NUMBER">0</span>)
+        {
+            perror(<span class="STRING">"select"</span>);
+            exit(<span class="NUMBER">3</span>);
+        }
+        
+        <span class="COMMENT">// Определяем тип события и выполняем соответствующие действия</span>
+        <span class="KEYWORD">if</span>(FD_ISSET(listener, &amp;readset))
+        {
+            <span class="COMMENT">// Поступил новый запрос на соединение, используем accept</span>
+            <span class="KEYWORD">int</span> sock = accept(listener, NULL, NULL);
+            <span class="KEYWORD">if</span>(sock &lt; <span class="NUMBER">0</span>)
+            {
+                perror(<span class="STRING">"accept"</span>);
+                exit(<span class="NUMBER">3</span>);
+            }
+            
+            fcntl(sock, F_SETFL, O_NONBLOCK);
+
+            clients.insert(sock);
+        }
+
+        <span class="KEYWORD">for</span>(set&lt;<span class="KEYWORD">int</span>&gt;::iterator it = clients.begin(); it != clients.end(); it++)
+        {
+            <span class="KEYWORD">if</span>(FD_ISSET(*it, &amp;readset))
+            {
+                <span class="COMMENT">// Поступили данные от клиента, читаем их</span>
+                bytes_read = recv(*it, buf, <span class="NUMBER">1024</span>, <span class="NUMBER">0</span>);
+
+                <span class="KEYWORD">if</span>(bytes_read &lt;= <span class="NUMBER">0</span>)
+                {
+                    <span class="COMMENT">// Соединение разорвано, удаляем сокет из множества</span>
+                    close(*it);
+                    clients.erase(*it);
+                    <span class="KEYWORD">continue</span>;
+                }
+
+                <span class="COMMENT">// Отправляем данные обратно клиенту</span>
+                send(*it, buf, bytes_read, <span class="NUMBER">0</span>);
+            }
+        }
+    }
+    
+    <span class="KEYWORD">return</span> <span class="NUMBER">0</span>;
+}</pre></td></tr></tbody></table></div>
+
+<h2>Работа по стандартным протоколам<a name="EI6AE"></a></h2>
+
+
+<p>Как я уже говорил, сокеты могут использоваться при написании приложений, работающих по протоколам прикладного уровня Internet (HTTP, FTP, SMTP и т. д.). При этом взаимодействие клиента и сервера происходит по той же самой схеме, что и взаимодействие эхо-клиента и эхо-сервера в нашем примере. Разница в том, что данные, которыми обмениваются клиент и сервер, интерпретируются в соответствии с предписаниями соответствующего протокола.</p>
+
+<p>Например, веб-сервер может работать по следующему алгоритму.</p>
+
+<ol>
+<li>Создаём слушающий сокет и привязываем его к 80-му порту (стандартный порт для HTTP-сервера).</li>
+<li>Принимаем очередной запрос на соединение.</li>
+<li>Читаем HTTP-запрос от клиента (он имеет стандартный формат и описан в RFC2616).</li>
+<li>Обрабатываем запрос и отправляем клиенту ответ, который также имеет стандартный формат.</li>
+<li>Разрываем соединение.</li>
+</ol>
+
+<p>Веб-броузер, который является клиентом по отношению к веб-серверу, может использовать похожий алгоритм.</p>
+
+<ol>
+<li>Соединяемся с сервером по заданному адресу.</li>
+<li>Отправляем ему HTTP-запрос.</li>
+<li>Получаем и обрабатываем ответ сервера (например, форматируем и выводим на экран полученную HTML-страницу).</li>
+<li>Разрываем соединение.</li>
+</ol>
+
+<p>Как видим, в работе по стандартным протоколам нет ничего сложного или принципиально нового.</p>
+<h2>Прорыв за пределы платформы<a name="EOAAG"></a></h2>
+
+
+<p>В мире Internet взаимодействие программ, работающих на разных платформах, встречается сплошь и рядом. Так, практически ежесекундно очередной Internet Explorer подсоединяется к веб-серверу Apache, а очередной Netscape Navigator совершенно спокойно подключается к IIS.  Вот почему весьма полезно писать программы так, чтобы их можно было без труда переносить на другие платформы. В этом разделе мы посмотрим, как переносить Linux-программы, использующие сокеты, на платформу Windows.</p>
+
+<p>Список основных отличий socket API и Winsock API выглядит примерно так.</p>
+
+<ul style="LIST-STYLE:square">
+<li>В Windows набор заголовочных файлов существенно уменьшен. Собственно говоря, вам нужно включить всего один файл winsock.h (или winsock2.h, если вы хотите использовать расширенные возможности Winsock 2).</li>
+<li>В Windows библиотеку Winsock необходимо явно проинициализировать до обращения к любым другим функциям из неё. Это делается с помощью функции <b>WSAStartup</b>. Кроме того, существует функция <b>WSACleanup</b>, которую следует вызывать по завершении работы с сокетами.</li>
+<li>Как мы знаем, в Linux дескрипторы сокетов имеют тип <b>int</b>. В Windows сокеты не являются файловыми дескрипторами, поэтому для них введён свой тип <b>SOCKET</b>. Хотя этот тип и объявлен как <b>u_int</b>, полагаться на это в программе не следует.</li>
+<li>В Windows для работы с сокетами не используются функции файлового ввода/вывода (<b>read</b> и <b>write</b>). Вместо <b>close</b> используется <b>closesocket</b>.</li>
+<li>В Windows глобальная переменная <b>errno</b> не используется. Вместо этого код последней ошибки сохраняется системой для каждого потока отдельно. Чтобы его получить, используется функция <b>WSAGetLastError</b>.</li>
+<li>В Windows введены дополнительные константы, которые следует применять вместо конкретных чисел. Так, значения, возвращаемые функциями Winsock, следует сравнивать с константами <b>INVALID_SOCKET</b> или <b>SOCKET_ERROR</b>, а не с -1.</li>
+</ul>
+
+<p>Если переписать наш эхо-клиент с учётом приведённых особенностей Winsock API, а затем скомпилировать его под Windows (например, с помощью Visual C++), он вполне сможет взаимодействовать с эхо-сервером, работающим под Linux. Таким образом, сокеты позволяют решить проблему кроссплатформенного взаимодействия двух приложений.</p>
+
+<p>К сожалению, различия socket API и Winsock не ограничиваются приведённым списком. При портировании более сложных, "продвинутых" программ начинают возникать более принципиальные проблемы. Например, под Windows существуют ограничения в поддержке низкоуровневых сокетов (они впервые появились в спецификации Winsock 2, а возможность напрямую манипулировать IP-заголовками доступна только под Windows 2000). Кроме того, проблемы могут возникнуть с функциями, не имеющими прямого отношения к socket API. Так, в Windows нет прямого аналога функции <b>fork</b>, и для организации параллельного обслуживания клиентов придётся прибегнуть к другим средствам.</p>
+<h2>Заключение<a name="EMCAG"></a></h2>
+
+
+<p>В этой статье мы рассмотрели целый ряд важных аспектов программирования сокетов. Тем самым мы заложили прочную основу для дальнейших исследований в этой области. Разумеется, большое количество деталей осталось за рамками нашей беседы. Но теперь вы сможете самостоятельно почерпнуть недостающую информацию из man-страниц Linux и из собственного практического опыта. Желаю удачи.</p>
+<div align="right"><font style="font-family:arial;font-size:9pt;color:#8088a0"><i><hr color="#8088a0" width="100%" size="1">
+                Любой из материалов, опубликованных на этом сервере, не может быть воспроизведен в какой бы
+                то ни было форме и какими бы то ни было средствами без письменного разрешения владельцев авторских
+                прав. 
+             </i></font></div>
+<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script><script src="./Программирование сокетов в Linux_files/ga.js" type="text/javascript"></script>
+<script type="text/javascript">
+	var pageTracker = _gat._getTracker("UA-1276305-1");
+	pageTracker._addOrganic("rambler.ru", "words");
+	pageTracker._addOrganic("mail.ru", "q");
+	pageTracker._addOrganic("aport.ru", "r");
+	pageTracker._addOrganic("metabot.ru", "st");
+	pageTracker._addOrganic("meta.ua", "q");
+	pageTracker._addOrganic("bigmir.net", "q");
+	pageTracker._addOrganic("nigma.ru", "s");
+	pageTracker._trackPageview();
+</script>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+(function (d, w, c) {
+    (w[c] = w[c] || []).push(function() {
+        try {
+            w.yaCounter49003 = new Ya.Metrika({id:49003, enableAll: true, trackHash:true, webvisor:true,type:1});
+        } catch(e) { }
+    });
+    
+    var n = d.getElementsByTagName("script")[0],
+        s = d.createElement("script"),
+        f = function () { n.parentNode.insertBefore(s, n); };
+    s.type = "text/javascript";
+    s.async = true;
+    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+    if (w.opera == "[object Opera]") {
+        d.addEventListener("DOMContentLoaded", f);
+    } else { f(); }
+})(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript>&lt;div&gt;&lt;img src="//mc.yandex.ru/watch/49003?cnt-class=1" style="position:absolute; left:-9999px;" alt="" /&gt;&lt;/div&gt;</noscript>
+<!-- /Yandex.Metrika counter --><table width="100%" border="0" cellspacing="0" celpadding="2" style="font-family:verdana;font-weight:bold;padding: 0px 5px; BORDER: #9daabd 1px 	solid; 	COLOR: #646464; BACKGROUND-COLOR: #e6e6e6;"><tbody><tr><td nowrap="nowrap"><font size="1" style="font-weight:normal"><script src="./Программирование сокетов в Linux_files/shMenu.v1.js" type="text/javascript" charset="utf-8"></script>&lt;&lt;<a href="http://www.rsdn.ru/?article/unix/sockets.xml" target="_top">Показать&nbsp;меню</a>&nbsp;</font></td><td nowrap="nowrap" align="right" width="100%"><font size="2">&nbsp;<a href="http://www.rsdn.ru/article/unix/sockets.xml?print" target="_blank" title="Версия для печати"><img align="absmiddle" width="16" height="14" src="./Программирование сокетов в Linux_files/printer2.gif" border="0"></a>&nbsp;&nbsp;<a href="http://www.rsdn.ru/forum/network/678813" target="_self" title="Перейти к обсуждению статьи"><font size="1" color="#646464"> Сообщений </font><font color="black">20</font></a>&nbsp;&nbsp;<a href="http://www.rsdn.ru/forum/network/678813" target="_self" title="Перейти к обсуждению статьи"><img src="./Программирование сокетов в Linux_files/showfr.gif" align="absmiddle" border="0" width="18px" height="14px"></a>&nbsp;<a href="http://www.rsdn.ru/Forum/RateList.aspx?mid=678813"><font color="#646464"><font size="1"> Оценка </font><font color="black">946</font>
+									[<font style="font-weight: normal;"><span style="color:green;">+4</span>/<span style="color:blue;">-3</span></font>]
+								</font></a>&nbsp;&nbsp; <a target="_blank" rel="nofollow" href="http://www.rsdn.ru/Users/Private/AddFav.aspx?mid=678813" onclick="return AddFav(this.href);" title="Добавить в избранное"><img align="absmiddle" src="./Программирование сокетов в Linux_files/fav.gif" border="0" height="14px"></a>&nbsp;&nbsp;<a href="http://www.rsdn.ru/Forum/Private/Subscr.aspx?tid=678813" onclick="return SubMsg(this.href)" title="Подписка на сообщения" rel="nofollow"><img class="i" align="absmiddle" src="./Программирование сокетов в Linux_files/sub.gif" border="0" width="18px" height="14px"></a>&nbsp;&nbsp;&nbsp;<font size="1">Оценить </font><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=-3" onclick="return RateMsg(this.href);" title="+1"><img align="absmiddle" src="./Программирование сокетов в Linux_files/n11.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=1" onclick="return RateMsg(this.href);" title="Интересно"><img align="absmiddle" src="./Программирование сокетов в Linux_files/n1.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=2" onclick="return RateMsg(this.href);" title="Спасибо"><img align="absmiddle" src="./Программирование сокетов в Linux_files/n2.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=3" onclick="return RateMsg(this.href);" title="Супер"><img align="absmiddle" src="./Программирование сокетов в Linux_files/n3.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=-1" onclick="return RateMsg(this.href);" title="Удалить оценку"><img align="absmiddle" src="./Программирование сокетов в Linux_files/nx.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=-4" onclick="return RateMsg(this.href);" title="Согласен"><img align="absmiddle" src="./Программирование сокетов в Linux_files/np.gif" border="0" width="18px" height="14px"></a><a target="_blank" rel="nofollow" href="http://www.rsdn.ru/forum/Private/Rate.aspx?mid=678813&rate=0" onclick="return RateMsg(this.href);" title="Не согласен"><img align="absmiddle" src="./Программирование сокетов в Linux_files/nm.gif" border="0" width="18px" eight="14px"></a>&nbsp;
+					</font></td></tr></tbody></table></body></html>
