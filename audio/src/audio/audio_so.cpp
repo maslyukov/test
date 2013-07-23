@@ -115,7 +115,7 @@ extern "C" bool OpenSLWrap_Init(AndroidAudioCallback cb, int _FramesPerBuffer,
     }
 
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
-            SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2 };
+    SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2 };
     SLDataFormat_PCM format_pcm = {
     SL_DATAFORMAT_PCM, 2, sr,
     SL_PCMSAMPLEFORMAT_FIXED_16,
