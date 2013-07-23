@@ -1,2 +1,0 @@
-http://www.rsdn.ru/article/unix/sockets.xml
-http://www.thegeekstuff.com/2011/12/c-socket-programming/
