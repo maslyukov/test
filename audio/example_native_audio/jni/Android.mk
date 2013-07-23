@@ -12,12 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+#/home/maslyukov/android-ndk-r8e/platforms/android-14/arch-arm/usr/include
+
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := native-audio-jni
 LOCAL_SRC_FILES := native-audio-jni.c
+
+#LOCAL_C_INCLUDES := \
+#$(NDK_PROJECT_PATH)/../../include/ \
+
 # for native audio
 LOCAL_LDLIBS    += -lOpenSLES
 # for logging
