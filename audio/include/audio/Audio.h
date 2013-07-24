@@ -14,16 +14,30 @@
 namespace OpenSL {
 
 
-class Player {
-
+class Object {
+protected:
+    SLObjectItf this_object;
+public:
+    Object(SLObjectItf object);
+    ~Object();
+    auto get()->decltype(*this_object);
+    auto addr()->decltype(this_object);
 };
 
-
+class OutputMix : public Object {
+    Engine& eng;
+public:
+    OutputMix(Engine& eng);
+    ~OutputMix();
+};
 
 class Engine {
-    SLObjectItf object;
+    SLObjectItf this_object;
+    SLEngineItf this_engine;
+    auto getObject()->decltype(*this_object);
 public:
-    SLEngineItf engine;
+    auto get()->decltype(*this_engine);
+    auto addr()->decltype(this_engine);
     Engine();
     ~Engine();
 };
