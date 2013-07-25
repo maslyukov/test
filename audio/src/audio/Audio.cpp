@@ -31,27 +31,23 @@ auto Object::addr()->decltype(this_object) {
 Engine::Engine() {
     if (slCreateEngine(&this_object, 0, nullptr, 0, nullptr,
             nullptr) != SL_RESULT_SUCCESS) {
-        throw runtime_error(__func__ + ": fail to create");
+        throw runtime_error(string(__func__) + ": fail to create");
     }
-    if (getObject()->Realize(this_object, SL_BOOLEAN_FALSE)
-            != SL_RESULT_SUCCESS) {
-        throw runtime_error(__func__ + ": fail to realize");
+    if (getObject()->Realize(this_object, SL_BOOLEAN_FALSE) != SL_RESULT_SUCCESS) {
+        throw runtime_error(string(__func__) + ": fail to realize");
     }
     if (getObject()->GetInterface(this_object, SL_IID_ENGINE,
             &this_engine) != SL_RESULT_SUCCESS) {
-        throw runtime_error(__func__ + ": fail to get inteface");
+        throw runtime_error(string(__func__) + ": fail to get inteface");
 
     }
 }
-
 Engine::~Engine() {
-    getObject()->Destroy(this_engine);
+    getObject()->Destroy(this_object);
 }
-
 auto Engine::getObject()->decltype(*this_object) {
     return *this_object;
 }
-
 auto Engine::get()->decltype(*this_engine) {
     return *this_engine;
 }
@@ -66,13 +62,13 @@ OutputMix::OutputMix(Engine& eng) :
     const SLboolean req[1] = { SL_BOOLEAN_FALSE };
     if (eng.get()->CreateOutputMix(eng.addr(), &this_object, 1, ids,
             req) != SL_RESULT_SUCCESS) {
-        throw runtime_error(__func__ + ": fail to create");
+        throw runtime_error(string(__func__) + ": fail to create");
     }
-    if (this->get()->Realize(this_object, SL_BOOLEAN_FALSE)
-            != SL_RESULT_SUCCESS) {
-        throw runtime_error(__func__ + ": fail to realize");
+    if (this->get()->Realize(this_object, SL_BOOLEAN_FALSE) != SL_RESULT_SUCCESS) {
+        throw runtime_error(string(__func__) + ": fail to realize");
     }
 }
+
 OutputMix::~OutputMix() {
 
 }

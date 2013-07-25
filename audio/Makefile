@@ -16,8 +16,8 @@ INCLUDES	:= 	-I include \
 OUT		:= 	./bin
 #----------------------------------------------------------------------
 #SRC_C		:=	
-SRC_CPP		:=	./src/socket/Socket.cpp \
-			./src/client.cpp \
+SRC_CPP		:=	./src/audio/Audio.cpp \
+			./src/main.cpp \
 				
 			
 #----------------------------------------------------------------------
