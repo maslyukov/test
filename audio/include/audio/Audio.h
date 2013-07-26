@@ -8,13 +8,15 @@
 #ifndef AUDIO_H_
 #define AUDIO_H_
 
-namespace OpenSL {
-
 #include <vector>
+#include <memory>
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
+namespace OpenSL {
+
 using namespace std;
+
 //==============================================================================
 class Engine {
     SLObjectItf this_object;
@@ -33,14 +35,16 @@ protected:
     SLObjectItf this_object;
 public:
     Object(SLObjectItf object);
-    Object() : this_object(nullptr){}
+    Object() :
+            this_object(nullptr) {
+    }
     ~Object();
     auto object()->decltype(*this_object);
     auto pointer()->decltype(this_object);
 };
 
 //==============================================================================
-class OutputMix : public Object {
+class OutputMix: public Object {
     Engine& eng;
 public:
     OutputMix(Engine& eng);
@@ -48,7 +52,7 @@ public:
 };
 
 //==============================================================================
-class Player : public Object {
+class Player: public Object {
     Engine& eng;
 
     OutputMix outputMix;
@@ -56,11 +60,9 @@ class Player : public Object {
     SLPlayItf bqPlayerPlay;
     SLVolumeItf bqPlayerVolume;
 public:
-    using state_t = enum State {
-        Stopped = 1,
-        Pause = 2,
-        Palying = 3
-    };
+    typedef enum State {
+        Stopped = (SLuint32)1, Pause = (SLuint32)2, Palying = (SLuint32)3
+    } state_t;
     void setState(state_t state);
     void setVolume(int millibel);
     Player(Engine& eng);
@@ -70,11 +72,12 @@ public:
 
 //==============================================================================
 class Audio {
-    Engine eng;
-    Player player;
+    unique_ptr<Engine> eng;
+    unique_ptr<Player> player;
     SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
     vector<unsigned short> pcm;
     friend void callback(SLAndroidSimpleBufferQueueItf bq, void *context);
+    void enqueue();
 public:
     void play(const vector<unsigned short>& pcm);
     void stop();
@@ -83,11 +86,7 @@ public:
     ~Audio();
 };
 
-}//namespace OpenSL
+} //namespace OpenSL
 
 #endif /* AUDIO_H_ */
-
-
-
-
 
