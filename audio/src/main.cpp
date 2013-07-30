@@ -19,10 +19,13 @@ static const char android[] = {
 using namespace std;
 
 int main() {
-    const vector<unsigned short> pcm(hello, &hello[sizeof(hello) - 1]);
+    const vector<short> pcm1((short*)&android[0], (short*)&android[sizeof(android) - 1]);
+    const vector<short> pcm2((short*)hello, (short*)&hello[sizeof(hello) - 1]);
     cout << "m1" << endl;
     OpenSL::Audio a;
-    a.play(pcm);
+    a.add(0,pcm1);
+    a.add(1,pcm2);
+    a.play();
     cout << "m2" << endl;
     while (1) {
     }

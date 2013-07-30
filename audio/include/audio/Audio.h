@@ -8,6 +8,7 @@
 #ifndef AUDIO_H_
 #define AUDIO_H_
 
+#include <map>
 #include <vector>
 #include <memory>
 #include <SLES/OpenSLES.h>
@@ -72,14 +73,17 @@ public:
 
 //==============================================================================
 class Audio {
+    int track;
     unique_ptr<Engine> eng;
     unique_ptr<Player> player;
     SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
-    vector<unsigned short> pcm;
+    vector<vector<short> > pcms;
     friend void callback(SLAndroidSimpleBufferQueueItf bq, void *context);
     void enqueue();
 public:
-    void play(const vector<unsigned short>& pcm);
+    void add(int index, const vector<short>& pcm);
+    void remove(int index);
+    void play();
     void stop();
     void volume(int millibel);
     Audio();

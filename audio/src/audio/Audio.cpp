@@ -80,9 +80,11 @@ Engine::~Engine() {
 OutputMix::OutputMix(Engine& eng) :
         eng(eng) {
     int result;
+    const SLInterfaceID ids[] = {SL_IID_VOLUME};
+    const SLboolean req[] = {SL_BOOLEAN_FALSE};
 //    cout << string(__func__) + ": creates output mix" << endl;
-    if ((result = eng.object()->CreateOutputMix(eng.pointer(), &this_object,
-            0, nullptr, nullptr)) != SL_RESULT_SUCCESS) {
+    if ((result = eng.object()->CreateOutputMix(eng.pointer(), &this_object, 1,
+            ids, req)) != SL_RESULT_SUCCESS) {
         stringstream ss;
         ss << result;
         throw runtime_error(string(__func__) + ": fail to create - "+ ss.str());
@@ -105,11 +107,11 @@ OutputMix::~OutputMix() {
 //==============================================================================
 Player::Player(Engine& eng) :
         eng(eng), outputMix(eng) {
-    const int interfaces = 2;
+    const int interfaces = 1;
     // configure audio source
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
     SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,    // locator type
-            1                                           // number of buffers
+            1                                   // number of buffers
             };
     SLDataFormat_PCM format_pcm = {
             SL_DATAFORMAT_PCM,              // Format type (PCM)
@@ -140,12 +142,14 @@ Player::Player(Engine& eng) :
             };
     // create audio player
     const SLInterfaceID ids[interfaces] = { // Array of 3 Interfaces
-            SL_IID_BUFFERQUEUE,             // Buffer queue interface (pointer)
-            SL_IID_VOLUME                   // Volume interface (pointer)
+            SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
+//            SL_IID_BUFFERQUEUE,             // Buffer queue interface (pointer)
+//            SL_IID_VOLUME                   // Volume interface (pointer)
             };
     const SLboolean req[interfaces] = {     // Array of 3 flags
             SL_BOOLEAN_TRUE,                // (SLboolean) 0x00000001
-            SL_BOOLEAN_TRUE                 // (SLboolean) 0x00000001
+//            SL_BOOLEAN_TRUE,                // (SLboolean) 0x00000001
+//            SL_BOOLEAN_TRUE                 // (SLboolean) 0x00000001
             };
     cout << string(__func__) + ": creates player" << endl;
     if (eng.object()->CreateAudioPlayer(eng.pointer(), &this_object, &audioSrc,
@@ -162,12 +166,12 @@ Player::Player(Engine& eng) :
         throw runtime_error(
                 string(__func__) + ": fail to get player interface");
     }
-    cout << string(__func__) + ": gets volume interface" << endl;
-    if (object()->GetInterface(this_object, SL_IID_VOLUME,
-            &bqPlayerVolume) != SL_RESULT_SUCCESS) {
-        throw runtime_error(
-                string(__func__) + ": fail to get volume interface");
-    }
+//    cout << string(__func__) + ": gets volume interface" << endl;
+//    if (object()->GetInterface(this_object, SL_IID_VOLUME,
+//            &bqPlayerVolume) != SL_RESULT_SUCCESS) {
+//        throw runtime_error(
+//                string(__func__) + ": fail to get volume interface");
+//    }
 }
 
 //------------------------------------------------------------------------------
@@ -197,13 +201,15 @@ void callback(SLAndroidSimpleBufferQueueItf bq, void *context) {
 }
 
 //------------------------------------------------------------------------------
-Audio::Audio() {
+Audio::Audio() :
+        track(0) {
     int result;
     eng.reset(new Engine());
     player.reset(new Player(*eng.get()));
     cout << string(__func__) + ": gets queue interface" << endl;
     if ((result = player->object()->GetInterface(player->pointer(),
-            SL_IID_BUFFERQUEUE, &bqPlayerBufferQueue)) != SL_RESULT_SUCCESS) {
+            SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &bqPlayerBufferQueue))
+            != SL_RESULT_SUCCESS) { //SL_IID_BUFFERQUEUE
         stringstream ss;
         ss << result;
         throw runtime_error(
@@ -218,25 +224,36 @@ Audio::Audio() {
                 string(__func__) + ": fail to register callback - " + ss.str());
     }
 //    enqueue();
-//    player->setState(Player::State::Palying);
+    player->setState(Player::State::Palying);
 }
 
 //------------------------------------------------------------------------------
 void Audio::enqueue() {
     int result;
+    if(++track >= pcms.size())
+        track = 0;
     if ((result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue,
-            (const void*) pcm.data(), pcm.size())) != SL_RESULT_SUCCESS) {
+            (const void*) pcms.at(track).data(), pcms.at(track).size()<<1))//*2
+            != SL_RESULT_SUCCESS) {
         stringstream ss;
         ss << result;
         throw runtime_error(
                 string(__func__) + ": fail to enqueue - " + ss.str());
     }
+
 }
 
 //------------------------------------------------------------------------------
-void Audio::play(const vector<unsigned short>& pcm) {
-    if (&this->pcm != &pcm)
-        this->pcm = pcm;
+void Audio::add(int index, const vector<short>& pcm) {
+    if (index >= pcms.size())
+        pcms.resize(index+1);
+    pcms.at(index) = pcm;
+}
+//------------------------------------------------------------------------------
+void Audio::remove(int index) {
+}
+//------------------------------------------------------------------------------
+void Audio::play() {
     player->setState(Player::State::Palying);
     enqueue();
 }

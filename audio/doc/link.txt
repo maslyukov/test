@@ -1,1 +1,2 @@
 http://developer.android.com/tools/sdk/ndk/index.html
+http://audioprograming.wordpress.com/2012/03/03/android-audio-streaming-with-opensl-es-and-the-ndk/
