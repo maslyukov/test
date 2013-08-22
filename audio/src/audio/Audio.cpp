@@ -244,7 +244,7 @@ void Audio::enqueue() {
 }
 
 //------------------------------------------------------------------------------
-void Audio::add(int index, const vector<short>& pcm) {
+void Audio::set(int index, const vector<short>& pcm) {
     if (index >= pcms.size())
         pcms.resize(index+1);
     pcms.at(index) = pcm;

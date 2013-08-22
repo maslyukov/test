@@ -81,7 +81,7 @@ class Audio {
     friend void callback(SLAndroidSimpleBufferQueueItf bq, void *context);
     void enqueue();
 public:
-    void add(int index, const vector<short>& pcm);
+    void set(int index, const vector<short>& pcm);
     void remove(int index);
     void play();
     void stop();
