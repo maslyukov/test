@@ -25,6 +25,7 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_SRC_FILES:=\
 		../../../src/audio/Audio.cpp\
+		../../../src/audio/WAVParser.cpp\
 		../../../src/main.cpp \
 
 #		../../../src/filesystem_observer/IWatchFactory.cpp\

@@ -14,24 +14,31 @@
 using namespace std;
 
 class Service: public Daemon {
+    unique_ptr<SISS> server;
     virtual string filename();
 public:
     virtual void run();
+    virtual void stop();
 };
 //------------------------------------------------------------------------------
 string Service::filename() {
     return "/data/local/tmp/pid";
 }
-
+//------------------------------------------------------------------------------
+void Service::stop() {
+    if (server.get())
+        server->close();
+    Daemon::stop();
+}
 //------------------------------------------------------------------------------
 void Service::run() {
     array<unsigned char, 256> buf;
     int pr = 0;
-    SISS server(0, 33333);
+    server.reset(new SISS(0, 33333));
     cout << "ready for data" << endl;
     while (1) {
         try {
-            auto con = server.connect();
+            auto con = server->connect();
             int len = con->read(buf.data(), buf.size());
             cout << string((const char*) buf.data(), len) << endl;
             con->write((unsigned char*) "OK", 5);

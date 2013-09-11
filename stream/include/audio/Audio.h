@@ -11,6 +11,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <queue>
 #include <audio/WAVParser.h>
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -62,10 +63,11 @@ class Player: public Object {
     SLPlayItf bqPlayerPlay;
     SLVolumeItf bqPlayerVolume;
 public:
-    typedef enum State {
+    enum class State {
         Stopped = (SLuint32)1, Pause = (SLuint32)2, Palying = (SLuint32)3
-    } state_t;
-    void setState(state_t state);
+    };
+    State getState();
+    void setState(State state);
     void setVolume(int millibel);
     Player(Engine& eng, const Settings& settings);
     ~Player();
@@ -79,13 +81,20 @@ class Audio {
     unique_ptr<Player> player;
     SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
     vector<vector<unsigned char> > pcms;
+    vector<unsigned char> pcm_play;
+    vector<unsigned char> pcm;
+    queue<unsigned char> que;
     friend void callback(SLAndroidSimpleBufferQueueItf bq, void *context);
     void enqueue();
+    enum {bufferSizeHigher = 0x1FFFF};
+    enum {bufferSizeLower  = 0x0FFFF};
 public:
     void set(int index, const vector<unsigned char>& pcm);
     void set(int index, const unsigned char* pcm, int size);
+    void add(const unsigned char* pcm, int size);
     void remove(int index);
     void play();
+    bool isPlay();
     void stop();
     void volume(int millibel);
     Audio(const Settings& settings);

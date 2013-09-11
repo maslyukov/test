@@ -115,7 +115,7 @@ Player::Player(Engine& eng, const Settings& settings) :
     SLDataFormat_PCM format_pcm = {
             SL_DATAFORMAT_PCM,              // Format type (PCM)
             (SLuint32)settings.NumChannels,                              // Number of channels
-            (SLuint32)settings.SampleRate*1000,                   // Samples per second (8kHz)
+            (SLuint32)settings.SampleRate*1000,  // Samples per second (8kHz)
             (SLuint32)settings.BitsPerSample,    // Bits per second
             (SLuint32)settings.BitsPerSample,    // Container size
             (settings.NumChannels == 1) ?
@@ -171,8 +171,8 @@ Player::Player(Engine& eng, const Settings& settings) :
 }
 
 //------------------------------------------------------------------------------
-void Player::setState(state_t state) {
-    (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, state);
+void Player::setState(State state) {
+    (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, static_cast<SLuint32>(state));
 }
 
 //------------------------------------------------------------------------------
@@ -184,6 +184,14 @@ void Player::setVolume(int millibel) {
 }
 
 //------------------------------------------------------------------------------
+Player::State Player::getState() {
+    State state;
+    (*bqPlayerPlay)->GetPlayState(bqPlayerPlay,
+            reinterpret_cast<SLuint32*>(&state));
+    return state;
+}
+
+//------------------------------------------------------------------------------
 Player::~Player() {
     object()->Destroy(this_object);
 }
@@ -192,7 +200,7 @@ Player::~Player() {
 //==============================================================================
 void callback(SLAndroidSimpleBufferQueueItf bq, void *context) {
     auto a = (Audio*) context;
-    cout << string(__func__) + ": enter" << endl;
+//    cout << string(__func__) + ": enter" << endl;
     a->enqueue();
 }
 
@@ -220,22 +228,50 @@ Audio::Audio(const Settings& settings) :
                 string(__func__) + ": fail to register callback - " + ss.str());
     }
 //    enqueue();
-    player->setState(Player::State::Palying);
+//    player->setState(Player::State::Palying);
 }
 
 //------------------------------------------------------------------------------
 void Audio::enqueue() {
+//    static int queued = 0;
     int result;
-    if(++track >= pcms.size())
-        track = 0;
+    if(pcm.size() < bufferSizeLower) {
+        player->setState(Player::State::Pause);
+        (*bqPlayerBufferQueue)->Clear(bqPlayerBufferQueue);
+        cout << "Pause\n";
+        return;
+    }
+    pcm_play = pcm;
+    pcm.clear();
+//    if(que.empty()) {
+//        player->setState(Player::State::Stopped);
+//        return;
+//    }
+//    pcm.clear();
+//    while(!que.empty()) {
+//        pcm.push_back(que.front());
+//        que.pop();
+//    }
+
+//    queued = que.size();
     if ((result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue,
-            (const void*) pcms.at(track).data(), pcms.at(track).size()/*<<1*/))//*2
+            (const void*) pcm_play.data(), pcm_play.size()/*<<1*/))//*2
             != SL_RESULT_SUCCESS) {
         stringstream ss;
         ss << result;
         throw runtime_error(
                 string(__func__) + ": fail to enqueue - " + ss.str());
     }
+//    if(++track >= pcms.size())
+//        track = 0;
+//    if ((result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue,
+//            (const void*) pcms.at(track).data(), pcms.at(track).size()/*<<1*/))//*2
+//            != SL_RESULT_SUCCESS) {
+//        stringstream ss;
+//        ss << result;
+//        throw runtime_error(
+//                string(__func__) + ": fail to enqueue - " + ss.str());
+//    }
 
 }
 
@@ -253,12 +289,27 @@ void Audio::set(int index, const unsigned char* pcm, int size) {
         pcms.at(index).push_back(pcm[i]);
 }
 //------------------------------------------------------------------------------
+void Audio::add(const unsigned char* pcm, int size) {
+    for (int i = 0; i < size; ++i) {
+        this->pcm.push_back(pcm[i]);
+//        que.push(pcm[i]);
+    }
+}
+//------------------------------------------------------------------------------
 void Audio::remove(int index) {
 }
 //------------------------------------------------------------------------------
 void Audio::play() {
-    player->setState(Player::State::Palying);
-    enqueue();
+    if(!isPlay() && (pcm.size() > bufferSizeHigher) ) {
+        cout << "Palying\n";
+        player->setState(Player::State::Palying);
+        enqueue();
+    }
+}
+
+//------------------------------------------------------------------------------
+bool Audio::isPlay() {
+    return player->getState() == Player::State::Palying;
 }
 
 //------------------------------------------------------------------------------

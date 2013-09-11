@@ -6,7 +6,7 @@ export NDK_PROJECT_PATH=$(pwd)/app
 
 
 echo "---------------------------------------------"
-export APPLICATION_NAME=server
+export APPLICATION_NAME=stream_server
 
 echo ${APPLICATION_NAME}
 NDK_PATH=~/android-ndk-r8e/
