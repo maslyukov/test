@@ -15,6 +15,25 @@
 #include <audio/WAVParser.h>
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
+#include <thread>
+#include <atomic>
+
+
+
+class spinlock_mutex {
+    std::atomic_flag flag;
+public:
+    spinlock_mutex() :
+            flag(ATOMIC_FLAG_INIT) {
+    }
+    void lock() {
+        while (flag.test_and_set(std::memory_order_acquire));
+    }
+    void unlock() {
+        flag.clear(std::memory_order_release);
+    }
+};
+
 
 namespace OpenSL {
 
@@ -64,7 +83,7 @@ class Player: public Object {
     SLVolumeItf bqPlayerVolume;
 public:
     enum class State {
-        Stopped = (SLuint32)1, Pause = (SLuint32)2, Palying = (SLuint32)3
+        Stop = (SLuint32)1, Pause = (SLuint32)2, Play = (SLuint32)3
     };
     State getState();
     void setState(State state);
@@ -79,15 +98,17 @@ class Audio {
     int track;
     unique_ptr<Engine> eng;
     unique_ptr<Player> player;
-    SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
+    SLBufferQueueItf bqPlayerBufferQueue;
     vector<vector<unsigned char> > pcms;
     vector<unsigned char> pcm_play;
     vector<unsigned char> pcm;
     queue<unsigned char> que;
-    friend void callback(SLAndroidSimpleBufferQueueItf bq, void *context);
+    friend void callback(SLBufferQueueItf bq, void *context);
     void enqueue();
-    enum {bufferSizeHigher = 0x1FFFF};
-    enum {bufferSizeLower  = 0x0FFFF};
+    bool clearReq;
+    spinlock_mutex spinlock;
+    enum {bufferSizeHigher = 0x0800};
+    enum {bufferSizeLower  = 0x0400};
 public:
     void set(int index, const vector<unsigned char>& pcm);
     void set(int index, const unsigned char* pcm, int size);

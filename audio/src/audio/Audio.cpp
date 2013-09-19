@@ -220,7 +220,7 @@ Audio::Audio(const Settings& settings) :
                 string(__func__) + ": fail to register callback - " + ss.str());
     }
 //    enqueue();
-    player->setState(Player::State::Palying);
+    player->setState(Player::State::Play);
 }
 
 //------------------------------------------------------------------------------
@@ -257,13 +257,13 @@ void Audio::remove(int index) {
 }
 //------------------------------------------------------------------------------
 void Audio::play() {
-    player->setState(Player::State::Palying);
+    player->setState(Player::State::Play);
     enqueue();
 }
 
 //------------------------------------------------------------------------------
 void Audio::stop() {
-    player->setState(Player::State::Stopped);
+    player->setState(Player::State::Stop);
 }
 
 //------------------------------------------------------------------------------

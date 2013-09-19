@@ -9,21 +9,25 @@
 #include <system/Daemon.h>
 #include <iostream>
 #include <array>
+#include <fstream>
 #include <memory>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <audio/Audio.h>
 
-using namespace std;
+#define PATH "/sdcard/data/capture.pcm"
 
+using namespace std;
+#pragma pack(push,1)
 struct StreamSettings {
     uint16_t NumChannels;
-    uint32_t SampleRate;
     uint16_t BitsPerSample;
+    uint32_t SampleRate;
     uint32_t nBlockAlign;
     uint32_t size;
     uint8_t data[0];
 };
+#pragma pack(pop)
 
 class Service: public Daemon {
     unique_ptr<SISS> server;
@@ -44,43 +48,28 @@ void Service::stop() {
 }
 //------------------------------------------------------------------------------
 void Service::run() {
-    array<unsigned char, 1500> buf;
+    array<unsigned char, 2048> buf;
     int len = 0;
     server.reset(new SISS(0, 33333));
-    cout << "ready for data" << endl;
-    cout << "ready for srteam1" << endl;
     unique_ptr<OpenSL::Audio> a;
+    cout << "ready for srteam" << endl;
 
-//    while (len < sizeof(StreamSettings)) {
-//        len = con->read(&buf.at(len), buf.size() - len);
-//    }
-    cout << "ready for srteam2" << endl;
-//    StreamSettings sss = {2,48000,16,4,0,{}};
-//    Settings s = {2,48000,16};
-//    a.reset(new OpenSL::Audio(s));
-//    if(!memcmp(&sss, &s, sizeof(s))) {
-//        cout << "Euqal\n";
-//    }
-//    unsigned char* p;
-//    p = (unsigned char*)&sss;
-//    for (int i = 0; i < sizeof(Settings); ++i) {
-//        printf("%02X ", p[i]);
-//    }
-//    cout << endl;
-//    p = (unsigned char*)&s;
-//    for (int i = 0; i < sizeof(Settings); ++i) {
-//        printf("%02X ", p[i]);
-//    }
-
-    auto con = server->connect();
+    while(1) {
     try {
+        auto con = server->connect();
         int i = 0;
         int played = 0;
+        int inputLength;
         while (1) {
-            len = con->read(buf.begin(), buf.size());
-//            for (len = 0; len < sizeof(StreamSettings); ) {
-//                len = con->read(&buf.at(len), buf.size() - len);
-//            }
+            inputLength = sizeof(StreamSettings);
+            len = 0;
+            do {
+                len += con->read(&buf.at(len), inputLength - len);
+                if (len == sizeof(StreamSettings)) {
+                    inputLength = sizeof(StreamSettings)
+                        + reinterpret_cast<StreamSettings*>(buf.data())->size;
+                }
+            } while (len < inputLength);
             StreamSettings* settings =
                     reinterpret_cast<StreamSettings*>(buf.data());
             if (a.get() == nullptr) {
@@ -88,7 +77,6 @@ void Service::run() {
                 cout << "s->NumChannels   " << settings->NumChannels << endl;
                 cout << "s->SampleRate    " << settings->SampleRate << endl;
                 cout << "s->size          " << settings->size << endl;
-
                 Settings s;
                 s.BitsPerSample = settings->BitsPerSample;
                 s.NumChannels = settings->NumChannels;
@@ -96,62 +84,57 @@ void Service::run() {
                 cout << "Reset unique_ptr" << endl;
                 a.reset(new OpenSL::Audio(s));
                 cout << "Set player for playing bytes "
-                        << len - sizeof(StreamSettings) << endl;
+                        << settings->size << endl;
                 cout << "Receive bytes from socket " << len << endl;
-
-//                a->set(i++, settings->data, len - sizeof(StreamSettings));
-//                while(1);
-//                cout << "Start palying" << endl;
-//                a->add(settings->data, len - sizeof(StreamSettings));
-//                a->play();
-//                continue;
+            } else {
+                a->add(settings->data, settings->size);
+                a->play();
             }
-            a->add(settings->data, len - sizeof(StreamSettings));
-            a->play();
-
-//            if (!played)
-//                i++;
-//            if (i == 64) {
-//                i = 0;
-//                played = 1;
-//                a->play();
-//            }
-//            if (!a->isPlay())
-//                played = 0;
-//
-
-//            cout << "index = "<< i << " size = "
-//                    << len - sizeof(StreamSettings) << endl;
-//            a->play();
-
-
-//            if (!len)
-//                continue;
-//            cout << "Has read " << len << " bytes \n"
-//                    << string((const char*) buf.data(), len) << endl;
         }
     } catch (runtime_error& e) {
+        a->stop();
+        a.release();
         cout << "Catch exception: " << e.what() << endl;
+    }
     }
 }
 
+void playpcm() {
+    fstream capturefile(PATH, ios_base::binary|ios_base::in);
+    Settings s;
+    s.BitsPerSample = 16;
+    s.NumChannels = 2;
+    s.SampleRate = 48000;
+    unique_ptr<OpenSL::Audio> a(new OpenSL::Audio(s));
+    vector<uint8_t> sample;
+    while(!capturefile.eof()) {
+        sample.push_back(capturefile.get());
+    }
+    a->add(sample.data(), sample.size());
+    a->play();
+    while(1);
+}
+
+
 //------------------------------------------------------------------------------
 int main(int argc, char *argv[]) {
-    Service().run();
-//    if (argc != 2) {
-//        cout << "Please use " << argv[0] << " (start/stop/restart)\n";
-//        return -1;
-//    }
-//    if (string(argv[1]) == "start") {
-//        Service().start();
-//    } else if (string(argv[1]) == "stop") {
-//        Service().stop();
-//    } else if (string(argv[1]) == "restart") {
-//        Service srv;
-//        srv.stop();
-//        srv.start();
-//    } else {
-//        cout << "Please use " << argv[0] << " (start/stop/restart)\n";
-//    }
-//    return 0;
+//    playpcm();
+//    return 1;
+//    Service().run();
+    if (argc != 2) {
+        cout << "Please use " << argv[0] << " (start/stop/restart)\n";
+        return -1;
+    }
+    if (string(argv[1]) == "start") {
+        Service().start();
+    } else if (string(argv[1]) == "stop") {
+        Service().stop();
+    } else if (string(argv[1]) == "restart") {
+        Service srv;
+        srv.stop();
+        srv.start();
+    } else {
+        cout << "Please use " << argv[0] << " (start/stop/restart)\n";
+    }
+    return 0;
 }

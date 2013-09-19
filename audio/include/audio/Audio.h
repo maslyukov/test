@@ -63,7 +63,7 @@ class Player: public Object {
     SLVolumeItf bqPlayerVolume;
 public:
     typedef enum State {
-        Stopped = (SLuint32)1, Pause = (SLuint32)2, Palying = (SLuint32)3
+        Stop = (SLuint32)1, Pause = (SLuint32)2, Playing = (SLuint32)3
     } state_t;
     void setState(state_t state);
     void setVolume(int millibel);

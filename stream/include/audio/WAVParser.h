@@ -9,11 +9,13 @@
 #define WAVPARSER_H_
 #include <vector>
 
+#pragma pack(push,1)
 struct Settings {
     short NumChannels;
-    int SampleRate;
     short BitsPerSample;
+    int SampleRate;
 };
+#pragma pack(pop)
 
 class WAVParser {
 

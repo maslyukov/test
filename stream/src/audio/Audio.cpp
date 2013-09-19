@@ -7,6 +7,7 @@
 #include <audio/Audio.h>
 #include <stdexcept>
 #include <cstdio>
+#include <array>
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
@@ -36,9 +37,11 @@ auto Object::pointer()->decltype(this_object) {
 
 //==============================================================================
 Engine::Engine() {
+    const SLInterfaceID pIDs[1] = {SL_IID_ENGINE};
+    const SLboolean pIDsRequired[1]  = {SL_BOOLEAN_TRUE};
     cout << string(__func__) + ": SL - creates engine" << endl;
-    if (slCreateEngine(&this_object, 0, nullptr, 0, nullptr,
-            nullptr) != SL_RESULT_SUCCESS) {
+    if (slCreateEngine(&this_object, 0, nullptr, 1, pIDs,
+            pIDsRequired) != SL_RESULT_SUCCESS) {
         throw runtime_error(string(__func__) + ": fail to create");
     }
     cout << string(__func__) + ": SL - realizes engine" << endl;
@@ -79,11 +82,12 @@ Engine::~Engine() {
 OutputMix::OutputMix(Engine& eng) :
         eng(eng) {
     int result;
-    const SLInterfaceID ids[] = {SL_IID_VOLUME};
-    const SLboolean req[] = {SL_BOOLEAN_FALSE};
+    const int interfaces = 0;
+    const SLInterfaceID ids[interfaces] = {};//{SL_IID_VOLUME};
+    const SLboolean req[interfaces] = {};//{SL_BOOLEAN_FALSE};
 //    cout << string(__func__) + ": creates output mix" << endl;
-    if ((result = eng.object()->CreateOutputMix(eng.pointer(), &this_object, 1,
-            ids, req)) != SL_RESULT_SUCCESS) {
+    if ((result = eng.object()->CreateOutputMix(eng.pointer(), &this_object,
+            interfaces, ids, req)) != SL_RESULT_SUCCESS) {
         stringstream ss;
         ss << result;
         throw runtime_error(string(__func__) + ": fail to create - "+ ss.str());
@@ -138,9 +142,9 @@ Player::Player(Engine& eng, const Settings& settings) :
             };
     // create audio player
     const SLInterfaceID ids[interfaces] = { // Array of 3 Interfaces
-            SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-//            SL_IID_BUFFERQUEUE,             // Buffer queue interface (pointer)
+            SL_IID_BUFFERQUEUE,             // Buffer queue interface (pointer)
 //            SL_IID_VOLUME                   // Volume interface (pointer)
+//            SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
             };
     const SLboolean req[interfaces] = {     // Array of 3 flags
             SL_BOOLEAN_TRUE,                // (SLboolean) 0x00000001
@@ -198,7 +202,7 @@ Player::~Player() {
 
 
 //==============================================================================
-void callback(SLAndroidSimpleBufferQueueItf bq, void *context) {
+void callback(SLBufferQueueItf bq, void *context) {
     auto a = (Audio*) context;
 //    cout << string(__func__) + ": enter" << endl;
     a->enqueue();
@@ -212,8 +216,8 @@ Audio::Audio(const Settings& settings) :
     player.reset(new Player(*eng.get(), settings));
     cout << string(__func__) + ": gets queue interface" << endl;
     if ((result = player->object()->GetInterface(player->pointer(),
-            SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &bqPlayerBufferQueue))
-            != SL_RESULT_SUCCESS) { //SL_IID_BUFFERQUEUE
+            SL_IID_BUFFERQUEUE, &bqPlayerBufferQueue)) //
+            != SL_RESULT_SUCCESS) { //SL_IID_ANDROIDSIMPLEBUFFERQUEUE
         stringstream ss;
         ss << result;
         throw runtime_error(
@@ -227,52 +231,34 @@ Audio::Audio(const Settings& settings) :
         throw runtime_error(
                 string(__func__) + ": fail to register callback - " + ss.str());
     }
-//    enqueue();
-//    player->setState(Player::State::Palying);
+    player->setState(Player::State::Stop);
 }
 
 //------------------------------------------------------------------------------
 void Audio::enqueue() {
-//    static int queued = 0;
     int result;
-    if(pcm.size() < bufferSizeLower) {
+    int size;
+    size = pcm.size();
+    if (!size) {
+        player->setState(Player::State::Stop);
+        cout << "stop\n";
+    } else if (size < bufferSizeLower) {
         player->setState(Player::State::Pause);
-        (*bqPlayerBufferQueue)->Clear(bqPlayerBufferQueue);
-        cout << "Pause\n";
-        return;
+        cout << "pause\n";
+    } else {
+        spinlock.lock();
+        pcm_play = pcm;
+        spinlock.unlock();
+        clearReq = true;
+        if ((result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue,
+                static_cast<const void*>(pcm_play.data()), pcm_play.size()))
+                != SL_RESULT_SUCCESS) {
+            stringstream ss;
+            ss << result;
+            throw runtime_error(
+                    string(__func__) + ": fail to enqueue - " + ss.str());
+        }
     }
-    pcm_play = pcm;
-    pcm.clear();
-//    if(que.empty()) {
-//        player->setState(Player::State::Stopped);
-//        return;
-//    }
-//    pcm.clear();
-//    while(!que.empty()) {
-//        pcm.push_back(que.front());
-//        que.pop();
-//    }
-
-//    queued = que.size();
-    if ((result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue,
-            (const void*) pcm_play.data(), pcm_play.size()/*<<1*/))//*2
-            != SL_RESULT_SUCCESS) {
-        stringstream ss;
-        ss << result;
-        throw runtime_error(
-                string(__func__) + ": fail to enqueue - " + ss.str());
-    }
-//    if(++track >= pcms.size())
-//        track = 0;
-//    if ((result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue,
-//            (const void*) pcms.at(track).data(), pcms.at(track).size()/*<<1*/))//*2
-//            != SL_RESULT_SUCCESS) {
-//        stringstream ss;
-//        ss << result;
-//        throw runtime_error(
-//                string(__func__) + ": fail to enqueue - " + ss.str());
-//    }
-
 }
 
 //------------------------------------------------------------------------------
@@ -290,10 +276,15 @@ void Audio::set(int index, const unsigned char* pcm, int size) {
 }
 //------------------------------------------------------------------------------
 void Audio::add(const unsigned char* pcm, int size) {
+    spinlock.lock();
+    if (clearReq) {
+        this->pcm.clear();
+        clearReq = false;
+    }
     for (int i = 0; i < size; ++i) {
         this->pcm.push_back(pcm[i]);
-//        que.push(pcm[i]);
     }
+    spinlock.unlock();
 }
 //------------------------------------------------------------------------------
 void Audio::remove(int index) {
@@ -301,20 +292,20 @@ void Audio::remove(int index) {
 //------------------------------------------------------------------------------
 void Audio::play() {
     if(!isPlay() && (pcm.size() > bufferSizeHigher) ) {
-        cout << "Palying\n";
-        player->setState(Player::State::Palying);
         enqueue();
+        cout << "Playing\n";
+        player->setState(Player::State::Play);
     }
 }
 
 //------------------------------------------------------------------------------
 bool Audio::isPlay() {
-    return player->getState() == Player::State::Palying;
+    return player->getState() == Player::State::Play;
 }
 
 //------------------------------------------------------------------------------
 void Audio::stop() {
-    player->setState(Player::State::Stopped);
+    player->setState(Player::State::Stop);
 }
 
 //------------------------------------------------------------------------------
