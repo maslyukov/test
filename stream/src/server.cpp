@@ -92,7 +92,6 @@ void Service::run() {
             }
         }
     } catch (runtime_error& e) {
-        a->stop();
         a.release();
         cout << "Catch exception: " << e.what() << endl;
     }

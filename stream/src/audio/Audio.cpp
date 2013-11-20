@@ -73,7 +73,6 @@ auto Engine::pointer()->decltype(this_engine) {
 
 //------------------------------------------------------------------------------
 Engine::~Engine() {
-    cout << string(__func__) + ": SL - destroy engine" << endl;
     getObject()->Destroy(this_object);
 }
 
@@ -85,7 +84,6 @@ OutputMix::OutputMix(Engine& eng) :
     const int interfaces = 0;
     const SLInterfaceID ids[interfaces] = {};//{SL_IID_VOLUME};
     const SLboolean req[interfaces] = {};//{SL_BOOLEAN_FALSE};
-//    cout << string(__func__) + ": creates output mix" << endl;
     if ((result = eng.object()->CreateOutputMix(eng.pointer(), &this_object,
             interfaces, ids, req)) != SL_RESULT_SUCCESS) {
         stringstream ss;
@@ -315,6 +313,7 @@ void Audio::volume(int millibel) {
 
 //------------------------------------------------------------------------------
 Audio::~Audio() {
+    player->setState(Player::State::Stop);
 }
 
 }//namespace OpenSL
