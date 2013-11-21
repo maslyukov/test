@@ -86,9 +86,14 @@ SISS::SISS(unsigned int ip, int port) {
     addr.sin_port = htons(port & 0xFFFF);
     addr.sin_family = Settings::family;
     addr.sin_addr.s_addr = Settings::address;
+    int on_reuse = 1;
     socketFd = socket(Settings::family, Settings::type, Settings::protocol);
     if (socketFd < 0) {
         throw runtime_error("Can't open the socket");
+    }
+    if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, (char*)&on_reuse,
+            sizeof(on_reuse)) < 0) {
+        throw runtime_error("Can't set socket options");
     }
     if (bind(socketFd, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
         throw runtime_error("Can't bind the socket");

@@ -105,10 +105,12 @@ class Audio {
     queue<unsigned char> que;
     friend void callback(SLBufferQueueItf bq, void *context);
     void enqueue();
-    bool clearReq;
+//    bool clearReq;
     spinlock_mutex spinlock;
-    enum {bufferSizeHigher = 0x0800};
-    enum {bufferSizeLower  = 0x0400};
+    enum {BUFFER_SIZE_HIGH = 0x1000};
+    enum {BUFFER_SIZE_LOW  = 0x0800};
+    Audio(Audio& a) = delete;
+    Audio() = delete;
 public:
     void set(int index, const vector<unsigned char>& pcm);
     void set(int index, const unsigned char* pcm, int size);

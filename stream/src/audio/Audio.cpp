@@ -195,6 +195,7 @@ Player::State Player::getState() {
 
 //------------------------------------------------------------------------------
 Player::~Player() {
+    cout << string(__func__) + ": Destroying player" << endl;
     object()->Destroy(this_object);
 }
 
@@ -221,6 +222,16 @@ Audio::Audio(const Settings& settings) :
         throw runtime_error(
                 string(__func__) + ": fail to get interface - " + ss.str());
     }
+    player->setState(Player::State::Stop);
+
+    if ((result = (*bqPlayerBufferQueue)->Clear(bqPlayerBufferQueue))
+             != SL_RESULT_SUCCESS) {
+        stringstream ss;
+        ss << result;
+        throw runtime_error(
+                string(__func__) + ": fail to clear");
+    }
+
     cout << string(__func__) + ": registers callback" << endl;
     if ((result = (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue,
             callback, (void*) this)) != SL_RESULT_SUCCESS) {
@@ -229,34 +240,44 @@ Audio::Audio(const Settings& settings) :
         throw runtime_error(
                 string(__func__) + ": fail to register callback - " + ss.str());
     }
-    player->setState(Player::State::Stop);
 }
 
 //------------------------------------------------------------------------------
 void Audio::enqueue() {
-    int result;
-    int size;
-    size = pcm.size();
-    if (!size) {
-        player->setState(Player::State::Stop);
-        cout << "stop\n";
-    } else if (size < bufferSizeLower) {
-        player->setState(Player::State::Pause);
-        cout << "pause\n";
-    } else {
+//    static int emty_buf_events = 0;
+    int result = SL_RESULT_SUCCESS;
+    //-------Leave for free using of software :))))
+//    int size;
+//    size = pcm.size();
+//    while(siz)
+//    if (!size) {
+//        player->setState(Player::State::Stop);
+//        cout << "stop\n";
+//    } else if (size < bufferSizeLower) {
+//        player->setState(Player::State::Pause);
+//        cout << "pause\n";
+//    } else {
+
+        pcm_play.clear();
         spinlock.lock();
-        pcm_play = pcm;
+        if (pcm.size() > BUFFER_SIZE_HIGH) {
+            pcm_play = pcm;
+            pcm.clear();
+        }
         spinlock.unlock();
-        clearReq = true;
+
         if ((result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue,
                 static_cast<const void*>(pcm_play.data()), pcm_play.size()))
                 != SL_RESULT_SUCCESS) {
-            stringstream ss;
-            ss << result;
-            throw runtime_error(
-                    string(__func__) + ": fail to enqueue - " + ss.str());
+//            if (++emty_buf_events > 10)
+                player->setState(Player::State::Stop);
+//            stringstream ss;
+//            ss << result;
+//            throw runtime_error(
+//                    string(__func__) + ": fail to enqueue - " + ss.str());
         }
-    }
+//        emty_buf_events = 0;
+//    }
 }
 
 //------------------------------------------------------------------------------
@@ -275,12 +296,10 @@ void Audio::set(int index, const unsigned char* pcm, int size) {
 //------------------------------------------------------------------------------
 void Audio::add(const unsigned char* pcm, int size) {
     spinlock.lock();
-    if (clearReq) {
-        this->pcm.clear();
-        clearReq = false;
-    }
-    for (int i = 0; i < size; ++i) {
-        this->pcm.push_back(pcm[i]);
+    int j = this->pcm.size();
+    this->pcm.resize(j + size);
+    for (int i = 0; i < size; ++i, ++j) {
+        this->pcm[j] = pcm[i];
     }
     spinlock.unlock();
 }
@@ -289,10 +308,14 @@ void Audio::remove(int index) {
 }
 //------------------------------------------------------------------------------
 void Audio::play() {
-    if(!isPlay() && (pcm.size() > bufferSizeHigher) ) {
+    int size;
+    spinlock.lock();
+    size = pcm.size();
+    spinlock.unlock();
+    if(!isPlay() && (size > BUFFER_SIZE_HIGH) ) {
         enqueue();
-        cout << "Playing\n";
         player->setState(Player::State::Play);
+//        cout << "Playing\n";
     }
 }
 
@@ -313,7 +336,15 @@ void Audio::volume(int millibel) {
 
 //------------------------------------------------------------------------------
 Audio::~Audio() {
-    player->setState(Player::State::Stop);
+    int result;
+    cout << string(__func__) + ": Clearing buffer" << endl;
+    if ((result = (*bqPlayerBufferQueue)->Clear(bqPlayerBufferQueue))
+             != SL_RESULT_SUCCESS) {
+        stringstream ss;
+        ss << result;
+        throw runtime_error(
+                string(__func__) + ": fail to clear");
+    }
 }
 
 }//namespace OpenSL

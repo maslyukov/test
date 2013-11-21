@@ -15,7 +15,8 @@
 #include <arpa/inet.h>
 #include <audio/Audio.h>
 
-#define PATH "/sdcard/data/capture.pcm"
+//#define PATH "/sdcard/data/capture.pcm"
+#define PATH "/data/local/tmp/capture.pcm"
 
 using namespace std;
 #pragma pack(push,1)
@@ -48,7 +49,8 @@ void Service::stop() {
 }
 //------------------------------------------------------------------------------
 void Service::run() {
-    array<unsigned char, 2048> buf;
+//    array<unsigned char, 8192> buf;
+    vector<unsigned char> buf(sizeof(StreamSettings));
     int len = 0;
     server.reset(new SISS(0, 33333));
     unique_ptr<OpenSL::Audio> a;
@@ -56,20 +58,26 @@ void Service::run() {
 
     while(1) {
     try {
+        cout << "Wait for connection" << endl;
         auto con = server->connect();
         int i = 0;
         int played = 0;
-        int inputLength;
+        int input_length;
+        cout << "Wait for data" << endl;
         while (1) {
-            inputLength = sizeof(StreamSettings);
+            input_length = sizeof(StreamSettings);
             len = 0;
             do {
-                len += con->read(&buf.at(len), inputLength - len);
+                len += con->read(&buf.at(len), input_length - len);
                 if (len == sizeof(StreamSettings)) {
-                    inputLength = sizeof(StreamSettings)
+                    input_length = sizeof(StreamSettings)
                         + reinterpret_cast<StreamSettings*>(buf.data())->size;
+                    if (input_length != buf.size()) {
+                        buf.resize(input_length);
+                        cout << "resize to " << input_length << endl;
+                    }
                 }
-            } while (len < inputLength);
+            } while (len < input_length);
             StreamSettings* settings =
                     reinterpret_cast<StreamSettings*>(buf.data());
             if (a.get() == nullptr) {
@@ -92,7 +100,9 @@ void Service::run() {
             }
         }
     } catch (runtime_error& e) {
-        a.release();
+//        a->stop();
+        a.reset();
+//        a.release();
         cout << "Catch exception: " << e.what() << endl;
     }
     }

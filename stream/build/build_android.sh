@@ -9,7 +9,7 @@ echo "---------------------------------------------"
 export APPLICATION_NAME=stream_server
 
 echo ${APPLICATION_NAME}
-NDK_PATH=~/android-ndk-r8e/
+NDK_PATH=~/work/android-ndk-r9b/
 
 cd ${NDK_PATH} 
 ./ndk-build
