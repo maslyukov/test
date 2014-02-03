@@ -107,8 +107,10 @@ class Audio {
     void enqueue();
 //    bool clearReq;
     spinlock_mutex spinlock;
-    enum {BUFFER_SIZE_HIGH = 0x1000};
-    enum {BUFFER_SIZE_LOW  = 0x0800};
+    enum {
+        BUFFER_SIZE_HIGH = 0xF000,
+        BUFFER_SIZE_LOW  = 0x5000
+    };
     Audio(Audio& a) = delete;
     Audio() = delete;
 public:

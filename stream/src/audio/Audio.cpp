@@ -246,38 +246,26 @@ Audio::Audio(const Settings& settings) :
 void Audio::enqueue() {
 //    static int emty_buf_events = 0;
     int result = SL_RESULT_SUCCESS;
-    //-------Leave for free using of software :))))
-//    int size;
-//    size = pcm.size();
-//    while(siz)
-//    if (!size) {
-//        player->setState(Player::State::Stop);
-//        cout << "stop\n";
-//    } else if (size < bufferSizeLower) {
-//        player->setState(Player::State::Pause);
-//        cout << "pause\n";
-//    } else {
 
-        pcm_play.clear();
-        spinlock.lock();
-        if (pcm.size() > BUFFER_SIZE_HIGH) {
-            pcm_play = pcm;
-            pcm.clear();
+    pcm_play.clear();
+    spinlock.lock();
+    pcm_play = pcm;
+    pcm.clear();
+    spinlock.unlock();
+
+    do {
+        if (!pcm_play.size()) {
+            player->setState(Player::State::Stop);
+            break;
         }
-        spinlock.unlock();
-
         if ((result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue,
                 static_cast<const void*>(pcm_play.data()), pcm_play.size()))
                 != SL_RESULT_SUCCESS) {
-//            if (++emty_buf_events > 10)
-                player->setState(Player::State::Stop);
-//            stringstream ss;
-//            ss << result;
-//            throw runtime_error(
-//                    string(__func__) + ": fail to enqueue - " + ss.str());
+            player->setState(Player::State::Stop);
+            break;
         }
-//        emty_buf_events = 0;
-//    }
+    } while (false);
+
 }
 
 //------------------------------------------------------------------------------
@@ -296,10 +284,9 @@ void Audio::set(int index, const unsigned char* pcm, int size) {
 //------------------------------------------------------------------------------
 void Audio::add(const unsigned char* pcm, int size) {
     spinlock.lock();
-    int j = this->pcm.size();
-    this->pcm.resize(j + size);
-    for (int i = 0; i < size; ++i, ++j) {
-        this->pcm[j] = pcm[i];
+    this->pcm.reserve(size);
+    for (int i = 0; i < size; ++i) {
+        this->pcm.push_back(pcm[i]);
     }
     spinlock.unlock();
 }
@@ -312,7 +299,7 @@ void Audio::play() {
     spinlock.lock();
     size = pcm.size();
     spinlock.unlock();
-    if(!isPlay() && (size > BUFFER_SIZE_HIGH) ) {
+    if(!isPlay() ) {
         enqueue();
         player->setState(Player::State::Play);
 //        cout << "Playing\n";

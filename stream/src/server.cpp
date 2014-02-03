@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <audio/Audio.h>
+#include <errno.h>
 
 //#define PATH "/sdcard/data/capture.pcm"
 #define PATH "/data/local/tmp/capture.pcm"
@@ -32,15 +33,10 @@ struct StreamSettings {
 
 class Service: public Daemon {
     unique_ptr<SISS> server;
-    virtual string filename();
 public:
     virtual void run();
     virtual void stop();
 };
-//------------------------------------------------------------------------------
-string Service::filename() {
-    return "/data/local/tmp/pid";
-}
 //------------------------------------------------------------------------------
 void Service::stop() {
     if (server.get())
@@ -63,18 +59,25 @@ void Service::run() {
         int i = 0;
         int played = 0;
         int input_length;
+        int valid_connection = 1;
+        int valid_data_len = 0;
         cout << "Wait for data" << endl;
-        while (1) {
+        while (valid_connection) {
             input_length = sizeof(StreamSettings);
             len = 0;
             do {
-                len += con->read(&buf.at(len), input_length - len);
+                valid_data_len = con->read(&buf.at(len), input_length - len);
+                if (!valid_data_len) {
+                    valid_connection = 0;
+                    break;
+                }
+                len += valid_data_len;
                 if (len == sizeof(StreamSettings)) {
                     input_length = sizeof(StreamSettings)
                         + reinterpret_cast<StreamSettings*>(buf.data())->size;
                     if (input_length != buf.size()) {
                         buf.resize(input_length);
-                        cout << "resize to " << input_length << endl;
+                        //cout << "resize to " << input_length << endl;
                     }
                 }
             } while (len < input_length);
@@ -105,6 +108,8 @@ void Service::run() {
 //        a.release();
         cout << "Catch exception: " << e.what() << endl;
     }
+    cout << "reset to initial status" << endl;
+    a.reset();
     }
 }
 
@@ -130,6 +135,16 @@ int main(int argc, char *argv[]) {
 //    playpcm();
 //    return 1;
 //    Service().run();
+//    try {
+//        unique_ptr<SISS> server;
+//        server.reset(new SISS(0, 33333));
+//        server->connect();
+//    } catch (runtime_error& e) {
+//        cout << "Catch exception: " << e.what() << endl;
+//        cout << "Error: " << errno << endl;
+//    }
+//    while(1);
+
     if (argc != 2) {
         cout << "Please use " << argv[0] << " (start/stop/restart)\n";
         return -1;

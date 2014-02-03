@@ -12,13 +12,17 @@
 
 class Daemon {
 private:
-//	static const std::string filename;
-    virtual void run();
+	std::string m_file_path;
+private:
     int savePid();
     int loadPid();
     int daemonize();
+    void onCreate();
+    void onDestroy();
 protected:
-    virtual std::string filename();
+    const std::string getCurrentDir();
+    const virtual std::string getFileName();
+    virtual void run();
 public:
     virtual void stop();
     virtual void start();

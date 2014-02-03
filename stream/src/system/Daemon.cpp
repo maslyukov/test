@@ -16,19 +16,44 @@
 #include <iostream>
 #include <fstream>
 
-#define PATH "/usr/tmp/videofix/pid"
-
 using namespace std;
 
-//const string Daemon::filename = "/usr/tmp/videofix/pid";
-//const string Daemon::filename = "/usr/tmp/videofix/pid";
+//------------------------------------------------------------------------------
+const std::string Daemon::getFileName() {
+    return "capture.pid";//getCurrentDir().append("capture.pid");
+}
+
+//------------------------------------------------------------------------------
+const std::string Daemon::getCurrentDir() {
+    const int size = 4096;
+    char* dir_char = new char[size];
+    getcwd(dir_char, size);
+    string dir_str;
+    dir_str.append(dir_char);
+    dir_str.append("/");
+    free(dir_char);
+    return dir_str;
+}
+
+//------------------------------------------------------------------------------
+void Daemon::onCreate() {
+    m_file_path.append(getCurrentDir().c_str());
+    m_file_path.append(getFileName().c_str());
+    //m_file_path = "/data/local/tmp/pid";
+}
+
+//------------------------------------------------------------------------------
+void Daemon::onDestroy() {
+}
 
 //------------------------------------------------------------------------------
 Daemon::Daemon() {
+    onCreate();
 }
 
 //------------------------------------------------------------------------------
 Daemon::~Daemon() {
+    onCreate();
 }
 
 //------------------------------------------------------------------------------
@@ -39,14 +64,9 @@ void Daemon::run() {
 }
 
 //------------------------------------------------------------------------------
-std::string Daemon::filename() {
-    return PATH;
-}
-
-//------------------------------------------------------------------------------
 int Daemon::savePid() {
     ofstream file;
-    file.open(filename().c_str(), ios_base::out);
+    file.open(m_file_path.c_str(), ios_base::out);
     if (file.is_open()) {
         file << getpid();
         file.close();
@@ -60,7 +80,7 @@ int Daemon::savePid() {
 int Daemon::loadPid() {
     ifstream file;
     int pid = -1;
-    file.open(filename().c_str(), ios_base::in);
+    file.open(m_file_path.c_str(), ios_base::in);
     if (file.is_open()) {
         file >> pid;
         file.close();
@@ -96,7 +116,7 @@ int Daemon::daemonize() {
     try {
         run();	//Run daemon
     } catch (...) {
-        remove(filename().c_str());
+        remove(m_file_path.c_str());
         throw;
     }
     exit(EXIT_SUCCESS);
@@ -118,7 +138,7 @@ void Daemon::stop() {
     int PID = loadPid();
     if (PID > 0) {
         kill(PID, SIGTERM);
-        remove(filename().c_str());
+        remove(m_file_path.c_str());
         cout << "Demon has stoped\n";
     } else {
         cout << "Nothing to kill\n";
