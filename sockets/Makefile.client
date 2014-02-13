@@ -1,13 +1,9 @@
-ifndef TARGER
-#TARGET := client
-endif
-
 LIBS		:=
 			
 OPTIMIZATION	:= -O0
 CFLAGS		+= -fpermissive -Wall -std=c++11
 CFLAGS		+= $(OPTIMIZATION) $(INCLUDES)
-LDFLAGS		+= -ldl 
+LDFLAGS		+= -ldl -lsocket -lexcept
 CC		:= g++ 
 #----------------------------------------------------------------------
 INCLUDES	:= 	-I include \
@@ -17,42 +13,30 @@ INCLUDES	:= 	-I include \
 OUT		:= 	./bin
 #----------------------------------------------------------------------
 #SRC_C		:=	
-#SRC_CPP		:=	
+SRC_CPP		:=	./src/client.cpp \
+				
 			
 #----------------------------------------------------------------------
-#OBJ_C		+= $(SRC_C:%.c=%.o)
-#OBJ_CPP		+= $(SRC_CPP:%.cpp=%.o)
+OBJ_C		+= $(SRC_C:%.c=%.o)
+OBJ_CPP		+= $(SRC_CPP:%.cpp=%.o)
 #OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 #----------------------------------------------------------------------
-all: DIR SERVER CLIENT
-DIR:
-	@mkdir -p $(OUT) 
-	@rm -f $(OUT)/*
-    
-SERVER:
-	make -f ./Makefile.server TARGET=server
-
-CLIENT:
-	make -f ./Makefile.client TARGET=client
-
+all: $(TARGET) clean
 #----------------------------------------------------------------------
-#$(TARGET): $(OBJ_C) $(OBJ_CPP)
-#	@$(CC) -o $(TARGET)  $(OBJ_C) $(OBJ_CPP) $(LIBS) $(LDFLAGS)
-#	@mkdir -p $(OUT) 
-#	@rm -f $(OUT)/*
-#	@mv $(TARGET) $(OUT)
-#	@echo "Installed => $(OUT)/"$@
+$(TARGET): $(OBJ_C) $(OBJ_CPP)
+	@$(CC) -o $(TARGET)  $(OBJ_C) $(OBJ_CPP) $(LIBS) $(LDFLAGS)
+	@mv $(TARGET) $(OUT)
+	@echo "Installed => $(OUT)/"$@
 
-
-#$(OBJ_CPP): %.o : %.cpp
-#	@$(CC) $(CFLAGS) -c $< -o $@
-#	@echo "Compiled  => "$<
+$(OBJ_CPP): %.o : %.cpp
+	@$(CC) $(CFLAGS) -c $< -o $@
+	@echo "Compiled  => "$<
 	
-#$(OBJ_C): %.o : %.c
-#	@$(CC) $(CFLAGS) -c $< -o $@
-#	@echo "Compiled  => "$<
+$(OBJ_C): %.o : %.c
+	@$(CC) $(CFLAGS) -c $< -o $@
+	@echo "Compiled  => "$<
 #----------------------------------------------------------------------
-#clean:
-#	@rm -rf $(OBJ_C) $(OBJ_CPP) $(TARGET)
-#	@echo "Clean"
+clean:
+	@rm -rf $(OBJ_C) $(OBJ_CPP) $(TARGET)
+	@echo "Clean"
 	

@@ -5,7 +5,7 @@
  *      Author: maslyukov
  */
 
-#include <socket/Socket.h>
+#include <socket/CSocketFactory.h>
 #include <iostream>
 #include <unistd.h>
 #include <array>
@@ -13,35 +13,26 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <log/logging.h>
+#include <exception>
+
 
 using namespace std;
+#define ROLE "[client]: "
 
 int main(int argc, char* argv[]) {
-    string message;
-    array<unsigned char, 256> buf;
-    buf.fill(0);
-
     if (argc != 2) {
-        cout << "Please use " << argv[0] << " IP\n";
-        exit(1);
+        LOGE(ROLE"Arguments must equals 2");
+        return -1;
     }
-    string str(argv[1]); // = "127.0.0.1";
+    std::string message(argv[1]);
 
-    cout << "Ready for incoming data\n";
-    cout << "=======================\n";
-    try {
-        while (1) {
-            unique_ptr<Connection> con(SISC::connect(str, 33333));
-            cout << "> ";
-            std::getline(cin, message);
-            if (message.empty())
-                continue;
-            con->write((unsigned char*) message.data(), message.size());
-            con->read(buf.data(), buf.size());
-            cout << buf.data() << endl;
-        }
-    } catch (exception& e) {
-        cout << "catch exception " << e.what() << endl;
-        throw;
-    }
+    auto socket = CSocketFactory::makeTcpSocket("127.0.0.1", "33333");
+    socket->connect();
+    int bytes = socket->write((unsigned char*)message.c_str(), message.size());
+    LOGI(ROLE"Message: %s", message.c_str());
+
+//    auto socket = CSocketFactory::makeUdpSocket("127.0.0.1", "33333");
+//    int bytes = socket->write((unsigned char*)message.c_str(), message.size());
+
 }
