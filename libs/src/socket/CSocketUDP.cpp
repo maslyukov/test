@@ -9,6 +9,7 @@
 #include <exception/exception.h>
 #include <socket/CSocketFactory.h>
 #include <log/logging.h>
+#include <errno.h>
 
 using std::string;
 
@@ -24,7 +25,7 @@ CSocketUDP::~CSocketUDP() {
 }
 
 //------------------------------------------------------------------------------
-int CSocketUDP::write(unsigned char* data, unsigned int size) {
+int CSocketUDP::write(const unsigned char* data, unsigned int size) {
     int numbytes = sendto(m_fd, data, size, 0, m_addr_info.ai_addr,
                 m_addr_info.ai_addrlen);
     if (numbytes < 0) {
@@ -38,7 +39,7 @@ int CSocketUDP::write(unsigned char* data, unsigned int size) {
 //------------------------------------------------------------------------------
 int CSocketUDP::read(unsigned char* data, unsigned int size) {
     struct sockaddr_storage their_addr;
-    unsigned int addr_len = sizeof(their_addr);
+    socklen_t addr_len = sizeof(their_addr);
     int numbytes = recvfrom(m_fd, (void*) data, size, 0,
             (struct sockaddr *) &their_addr, &addr_len);
     if (numbytes < 0) {

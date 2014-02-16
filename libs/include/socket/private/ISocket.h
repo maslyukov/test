@@ -42,7 +42,7 @@ public:
     * @param size   - size of buffer
     * @return       - size of written bytes
     */
-    virtual int write(unsigned char* data, unsigned int size) = 0;
+    virtual int write(const unsigned char* data, unsigned int size) = 0;
 
     /**
     * read from connection

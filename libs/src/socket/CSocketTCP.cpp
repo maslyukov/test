@@ -30,7 +30,7 @@ CSocketTCP::CSocketTCP(tSocket new_fd) : ISocket(new_fd) {
 }
 
 //------------------------------------------------------------------------------
-int CSocketTCP::write(unsigned char* data, unsigned int size) {
+int CSocketTCP::write(const unsigned char* data, unsigned int size) {
     int numbytes = ::send(m_fd, (const char*)data, size, 0);
     if (numbytes < 0) {
         throw Exception::CRuntime(FFL_MACRO, "Can't write to the socket: "

@@ -25,7 +25,7 @@ using namespace std;
 //==============================================================================
 ISocket::ISocket(tSocket new_fd) {
     struct sockaddr addr_info;
-    unsigned int len = sizeof(addr_info);
+    socklen_t len = sizeof(addr_info);
 
     if (getpeername(new_fd, &addr_info, &len) == -1) {
         ::close(new_fd);
