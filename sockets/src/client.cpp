@@ -27,12 +27,12 @@ int main(int argc, char* argv[]) {
     }
     std::string message(argv[1]);
 
-    auto socket = CSocketFactory::makeTcpSocket("127.0.0.1", "33333");
-    socket->connect();
+//    auto socket = CSocketFactory::makeTcpSocket("192.168.0.103", "33333");
+//    socket->connect();
+//    int bytes = socket->write((unsigned char*)message.c_str(), message.size());
+
+    auto socket = CSocketFactory::makeUdpSocket("192.168.0.103", "33333");
     int bytes = socket->write((unsigned char*)message.c_str(), message.size());
     LOGI(ROLE"Message: %s", message.c_str());
-
-//    auto socket = CSocketFactory::makeUdpSocket("127.0.0.1", "33333");
-//    int bytes = socket->write((unsigned char*)message.c_str(), message.size());
 
 }
