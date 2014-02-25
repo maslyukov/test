@@ -53,8 +53,8 @@ int CSocketTCP::read(unsigned char* data, unsigned int size) {
 
 //------------------------------------------------------------------------------
 std::unique_ptr<ISocket> CSocketTCP::accept() {
-    unsigned int len = sizeof (m_addr_info.ai_addrlen);
-    int new_fd = ::accept(m_fd, (struct sockaddr*)&m_addr_info.ai_addrlen, &len);
+    unsigned int len = m_addr_info.ai_addrlen;
+    int new_fd = ::accept(m_fd, (struct sockaddr*)m_addr_info.ai_addr, &len);
     if (new_fd < 0) {
         throw Exception::CRuntime(FFL_MACRO, "Can't open incoming socket: "
                 + string(strerror(errno)));

@@ -29,6 +29,7 @@ class ISocket {
 protected:
     tSocket m_fd;
     struct addrinfo m_addr_info;
+    struct sockaddr m_addr;
     ISocket(tSocket new_fd);
     ISocket(struct addrinfo* data);
 
