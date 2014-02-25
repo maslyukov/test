@@ -62,6 +62,7 @@ ISocket::ISocket(struct addrinfo* data) {
     m_addr_info = *p;
     m_addr = *p->ai_addr;
     m_addr_info.ai_addr = &m_addr;
+    LOGD("m_addr_info.ai_addrlen = %d", m_addr_info.ai_addrlen);
 }
 
 //------------------------------------------------------------------------------
@@ -78,12 +79,15 @@ ISocket::~ISocket() {
 void ISocket::bind() {
     int on_reuse = 1;
     if (::bind(m_fd, m_addr_info.ai_addr, m_addr_info.ai_addrlen) < 0) {
-        throw Exception::CRuntime(FFL_MACRO, "Can't bind the socket");
+        throw Exception::CRuntime(FFL_MACRO,
+                "Can't bind the socket"
+                + string(strerror(errno)));
     }
     LOGD("Socket has been bound");
     if (setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&on_reuse,
             sizeof(on_reuse)) < 0) {
-        throw Exception::CRuntime(FFL_MACRO, "Can't set sockopt to reuse address: "
+        throw Exception::CRuntime(FFL_MACRO,
+                "Can't set sockopt to reuse address: "
                 + string(strerror(errno)));
     }
     LOGD("Socket has been set to reuse address");

@@ -146,6 +146,7 @@ int main(int argc, char *argv[]) {
     server->bind();
 
     LOGI("Waiting for data");
+    server->read(&buf.at(0), 11);
     int input_length;
     while (1) {
         try {

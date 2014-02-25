@@ -21,7 +21,7 @@ std::unique_ptr<CSocketUDP> CSocketFactory::makeUdpSocket(
     LOGD("Create socket at \"%s:%s\"",
             host_name.empty() ? "localhost" : host_name.c_str(), port.c_str());
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
+    hints.ai_family = AF_INET; // set to AF_INET to force IPv4
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE; // use my IP
     if ((rv = getaddrinfo(host_name.empty() ? nullptr : host_name.c_str(),
