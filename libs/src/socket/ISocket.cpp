@@ -24,15 +24,17 @@ using namespace std;
 //==============================================================================
 //==============================================================================
 ISocket::ISocket(tSocket new_fd) {
-    struct sockaddr addr_info;
-    socklen_t len = sizeof(addr_info);
+    struct sockaddr addr;
+    socklen_t len = sizeof(addr);
 
-    if (getpeername(new_fd, &addr_info, &len) == -1) {
+    if (getpeername(new_fd, &addr, &len) == -1) {
         ::close(new_fd);
         throw Exception::CRuntime(FFL_MACRO, "Can't get peer name");
     }
     m_fd = new_fd;
-    memcpy(&m_addr_info, &addr_info, sizeof(addr_info));
+    m_addr = addr;
+    m_addr_info.ai_addr = &m_addr;
+
     //todo log. Who has established connection
 }
 
@@ -58,6 +60,8 @@ ISocket::ISocket(struct addrinfo* data) {
         throw Exception::CRuntime(FFL_MACRO,"Error: can't create socket");
     }
     m_addr_info = *p;
+    m_addr = *p->ai_addr;
+    m_addr_info.ai_addr = &m_addr;
 }
 
 //------------------------------------------------------------------------------
